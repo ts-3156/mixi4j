@@ -97,7 +97,7 @@ public class MixiTokenUtil {
 				token = setToken(responseBody);
 			} else if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 				System.err.println("認証が失敗している, たぶん、authorization codeの有効期限(3分間)が切れています。\n" +
-						"https://mixi.jp/connect_authorize.pl?client_id=[自分のCLIENT_ID]&response_type=code&scope=r_profile%20w_profile%20r_voice%20w_voice%20r_updates%20w_share%20r_photo%20w_photo%20r_message%20w_message%20w_diary%20r_checkin%20w_checkin%20\n" +
+						"https://mixi.jp/connect_authorize.pl?client_id=[自分のCLIENT_ID]&response_type=code&scope=r_profile%20r_profile%20r_profile_status%20r_profile_last_login%20r_profile_name%20r_profile_gender%20r_profile_birthday%20r_profile_blood_type%20r_profile_location%20r_profile_hometown%20r_profile_about_me%20r_profile_occupation%20r_profile_interests%20r_profile_favorite_things%20r_profile_organizations%20w_profile%20r_voice%20w_voice%20r_updates%20w_share%20r_photo%20w_photo%20r_message%20w_message%20w_diary%20r_checkin%20w_checkin%20\n" +
 						"↑このURLにアクセスして、authorization codeを取得し直してください。\n" +
 						"responsebody:\n\t" + readStream(connection.getErrorStream()) + ",\n" +
 						"header:\n\t" + connection.getHeaderFields() + ",\n" +

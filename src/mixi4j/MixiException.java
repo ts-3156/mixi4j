@@ -16,15 +16,12 @@
 
 package mixi4j;
 
-import twitter4j.internal.org.json.JSONException;
-import twitter4j.internal.org.json.JSONObject;
-
 import java.util.List;
 
 import mixi4j.internal.http.HttpResponse;
 import mixi4j.internal.http.HttpResponseCode;
-import mixi4j.internal.json.z_M4JInternalJSONImplFactory;
-import mixi4j.internal.util.z_T4JInternalParseUtil;
+import mixi4j.internal.org.json.JSONException;
+import mixi4j.internal.org.json.JSONObject;
 
 /**
  * An exception class that will be thrown when TwitterAPI calls are failed.<br>
@@ -32,7 +29,8 @@ import mixi4j.internal.util.z_T4JInternalParseUtil;
  *
  * @author Yusuke Yamamoto - yusuke at mac.com
  */
-public class MixiException extends Exception implements MixiResponse, HttpResponseCode {
+public class MixiException extends Exception implements HttpResponseCode {
+//public class MixiException extends Exception implements MixiResponse, HttpResponseCode {
     private int statusCode = -1;
     private static final long serialVersionUID = -2623309261327598087L;
     private ExceptionDiagnosis exceptionDiagnosis = null;
@@ -119,71 +117,74 @@ public class MixiException extends Exception implements MixiResponse, HttpRespon
         return value;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @since Twitter4J 2.1.2
-     */
-    public RateLimitStatus getRateLimitStatus() {
-        if (null == response) {
-            return null;
-        }
-        return z_M4JInternalJSONImplFactory.createRateLimitStatusFromResponseHeader(response);
-    }
+//    /**
+//     * {@inheritDoc}
+//     *
+//     * @since Twitter4J 2.1.2
+//     */
+//    public RateLimitStatus getRateLimitStatus() {
+//        if (null == response) {
+//            return null;
+//        }
+////        return z_M4JInternalJSONImplFactory.createRateLimitStatusFromResponseHeader(response);
+//        return null;
+//    }
 
     /**
      * {@inheritDoc}
      */
     public int getAccessLevel() {
-        return z_T4JInternalParseUtil.toAccessLevel(response);
+        return -1;
+//        return z_M4JInternalParseUtil.toAccessLevel(response);
     }
 
-    /**
-     * Returns the current feature-specific rate limit status if available.<br>
-     * This method is available in conjunction with Twitter#searchUsers()<br>
-     *
-     * @return current rate limit status
-     * @see <a href="https://dev.twitter.com/docs/rate-limiting">Rate Limiting | Twitter Developers</a>
-     * @since Twitter4J 2.1.2
-     */
-    public RateLimitStatus getFeatureSpecificRateLimitStatus() {
-        if (null == response) {
-            return null;
-        }
-        return z_M4JInternalJSONImplFactory.createFeatureSpecificRateLimitStatusFromResponseHeader(response);
-    }
+//    /**
+//     * Returns the current feature-specific rate limit status if available.<br>
+//     * This method is available in conjunction with Twitter#searchUsers()<br>
+//     *
+//     * @return current rate limit status
+//     * @see <a href="https://dev.twitter.com/docs/rate-limiting">Rate Limiting | Twitter Developers</a>
+//     * @since Twitter4J 2.1.2
+//     */
+//    public RateLimitStatus getFeatureSpecificRateLimitStatus() {
+//        if (null == response) {
+//            return null;
+//        }
+////        return z_M4JInternalJSONImplFactory.createFeatureSpecificRateLimitStatusFromResponseHeader(response);
+//        return null;
+//    }
 
-    /**
-     * Returns int value of "Retry-After" response header (Search API) or seconds_until_reset (REST API).
-     * An application that exceeds the rate limitations of the Search API will receive HTTP 420 response codes to requests. It is a best
-     * practice to watch for this error condition and honor the Retry-After header that instructs the application when it is safe to
-     * continue. The Retry-After header's value is the number of seconds your application should wait before submitting another query (for
-     * example: Retry-After: 67).<br>
-     * Check if getStatusCode() == 503 before calling this method to ensure that you are actually exceeding rate limitation with query
-     * apis.<br>
-     *
-     * @return instructs the application when it is safe to continue in seconds
-     * @see <a href="https://dev.twitter.com/docs/rate-limiting">Rate Limiting | Twitter Developers</a>
-     * @since Twitter4J 2.1.0
-     */
-    public int getRetryAfter() {
-        int retryAfter = -1;
-        if (this.statusCode == 400) {
-            RateLimitStatus rateLimitStatus = getRateLimitStatus();
-            if (rateLimitStatus != null) {
-                retryAfter = rateLimitStatus.getSecondsUntilReset();
-            }
-        } else if (this.statusCode == ENHANCE_YOUR_CLAIM) {
-            try {
-                String retryAfterStr = response.getResponseHeader("Retry-After");
-                if (retryAfterStr != null) {
-                    retryAfter = Integer.valueOf(retryAfterStr);
-                }
-            } catch (NumberFormatException ignore) {
-            }
-        }
-        return retryAfter;
-    }
+//    /**
+//     * Returns int value of "Retry-After" response header (Search API) or seconds_until_reset (REST API).
+//     * An application that exceeds the rate limitations of the Search API will receive HTTP 420 response codes to requests. It is a best
+//     * practice to watch for this error condition and honor the Retry-After header that instructs the application when it is safe to
+//     * continue. The Retry-After header's value is the number of seconds your application should wait before submitting another query (for
+//     * example: Retry-After: 67).<br>
+//     * Check if getStatusCode() == 503 before calling this method to ensure that you are actually exceeding rate limitation with query
+//     * apis.<br>
+//     *
+//     * @return instructs the application when it is safe to continue in seconds
+//     * @see <a href="https://dev.twitter.com/docs/rate-limiting">Rate Limiting | Twitter Developers</a>
+//     * @since Twitter4J 2.1.0
+//     */
+//    public int getRetryAfter() {
+//        int retryAfter = -1;
+//        if (this.statusCode == 400) {
+//            RateLimitStatus rateLimitStatus = getRateLimitStatus();
+//            if (rateLimitStatus != null) {
+//                retryAfter = rateLimitStatus.getSecondsUntilReset();
+//            }
+//        } else if (this.statusCode == ENHANCE_YOUR_CLAIM) {
+//            try {
+//                String retryAfterStr = response.getResponseHeader("Retry-After");
+//                if (retryAfterStr != null) {
+//                    retryAfter = Integer.valueOf(retryAfterStr);
+//                }
+//            } catch (NumberFormatException ignore) {
+//            }
+//        }
+//        return retryAfter;
+//    }
 
     /**
      * Tests if the exception is caused by network issue
@@ -195,17 +196,17 @@ public class MixiException extends Exception implements MixiResponse, HttpRespon
         return getCause() instanceof java.io.IOException;
     }
 
-    /**
-     * Tests if the exception is caused by rate limitation exceed
-     *
-     * @return if the exception is caused by rate limitation exceed
-     * @see <a href="https://dev.twitter.com/docs/rate-limiting">Rate Limiting | Twitter Developers</a>
-     * @since Twitter4J 2.1.2
-     */
-    public boolean exceededRateLimitation() {
-        return (statusCode == 400 && getRateLimitStatus() != null) // REST API
-                || (statusCode == 420); // Search API
-    }
+//    /**
+//     * Tests if the exception is caused by rate limitation exceed
+//     *
+//     * @return if the exception is caused by rate limitation exceed
+//     * @see <a href="https://dev.twitter.com/docs/rate-limiting">Rate Limiting | Twitter Developers</a>
+//     * @since Twitter4J 2.1.2
+//     */
+//    public boolean exceededRateLimitation() {
+//        return (statusCode == 400 && getRateLimitStatus() != null) // REST API
+//                || (statusCode == 420); // Search API
+//    }
 
     /**
      * Tests if the exception is caused by non-existing resource

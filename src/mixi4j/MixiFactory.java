@@ -19,16 +19,13 @@ package mixi4j;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 
-import mixi4j.auth.AccessToken;
 import mixi4j.auth.Authorization;
 import mixi4j.auth.AuthorizationFactory;
 import mixi4j.auth.MixiToken;
 import mixi4j.auth.OAuthAuthorization;
 import mixi4j.conf.Configuration;
 import mixi4j.conf.ConfigurationContext;
-import mixi4j.util.MixiTokenUtil;
 
 /**
  * A factory class for Twitter.
@@ -47,14 +44,14 @@ public final class MixiFactory implements java.io.Serializable {
 
     static {
         String className = null;
-        if (ConfigurationContext.getInstance().isGAE()) {
-            final String APP_ENGINE_TWITTER_IMPL = "twitter4j.AppEngineTwitterImpl";
-            try {
-                Class.forName(APP_ENGINE_TWITTER_IMPL);
-                className = APP_ENGINE_TWITTER_IMPL;
-            } catch (ClassNotFoundException ignore) {
-            }
-        }
+//        if (ConfigurationContext.getInstance().isGAE()) {
+//            final String APP_ENGINE_TWITTER_IMPL = "twitter4j.AppEngineTwitterImpl";
+//            try {
+//                Class.forName(APP_ENGINE_TWITTER_IMPL);
+//                className = APP_ENGINE_TWITTER_IMPL;
+//            } catch (ClassNotFoundException ignore) {
+//            }
+//        }
         if (className == null) {
             className = "mixi4j.MixiImpl";
         }
@@ -117,26 +114,6 @@ public final class MixiFactory implements java.io.Serializable {
      */
     public Mixi getInstance() {
         return getInstance(AuthorizationFactory.getInstance(conf));
-    }
-
-    /**
-     * Returns a OAuth Authenticated instance.<br>
-     * consumer key and consumer Secret must be provided by twitter4j.properties, or system properties.<br>
-     * Unlike {@link Mixi#setOAuthAccessToken(mixi4j.auth.AccessToken)}, this factory method potentially returns a cached instance.
-     *
-     * @param accessToken access token
-     * @return an instance
-     * @since Twitter4J 2.1.9
-     */
-    public Mixi getInstance(AccessToken accessToken) {
-        String consumerKey = conf.getOAuthConsumerKey();
-        String consumerSecret = conf.getOAuthConsumerSecret();
-        if (null == consumerKey && null == consumerSecret) {
-            throw new IllegalStateException("Consumer key and Consumer secret not supplied.");
-        }
-        OAuthAuthorization oauth = new OAuthAuthorization(conf);
-        oauth.setOAuthAccessToken(accessToken);
-        return getInstance(oauth);
     }
 
     /**

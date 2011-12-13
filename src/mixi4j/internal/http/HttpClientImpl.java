@@ -31,20 +31,16 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import mixi4j.MixiException;
 import mixi4j.conf.ConfigurationContext;
-import mixi4j.internal.util.z_T4JInternalStringUtil;
-import twitter4j.internal.logging.Logger;
 
 /**
  * @author Yusuke Yamamoto - yusuke at mac.com
  * @since Twitter4J 2.1.2
  */
 public class HttpClientImpl extends HttpClientBase implements HttpClient, HttpResponseCode, java.io.Serializable {
-    private static final Logger logger = Logger.getLogger(HttpClientImpl.class);
 
     private static boolean isJDK14orEarlier = false;
 
@@ -75,7 +71,7 @@ public class HttpClientImpl extends HttpClientBase implements HttpClient, HttpRe
     public HttpClientImpl(HttpClientConfiguration conf) {
         super(conf);
         if (isProxyConfigured() && isJDK14orEarlier) {
-            logger.warn("HTTP Proxy is not supported on JDK1.4 or earlier. Try twitter4j-httpclient-supoprt artifact");
+//            logger.warn("HTTP Proxy is not supported on JDK1.4 or earlier. Try twitter4j-httpclient-supoprt artifact");
         }
     }
 
@@ -138,7 +134,7 @@ public class HttpClientImpl extends HttpClientBase implements HttpClient, HttpRe
                                     write(out, boundary + "\r\n");
                                     write(out, "Content-Disposition: form-data; name=\"" + param.getName() + "\"\r\n");
                                     write(out, "Content-Type: text/plain; charset=UTF-8\r\n\r\n");
-                                    logger.debug(param.getValue());
+//                                    logger.debug(param.getValue());
                                     out.write(param.getValue().getBytes("UTF-8"));
                                     write(out, "\r\n");
                                 }
@@ -149,7 +145,7 @@ public class HttpClientImpl extends HttpClientBase implements HttpClient, HttpRe
                         } else {
                             con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                             String postParam = HttpParameter.encodeParameters(req.getParameters());
-                            logger.debug("Post Params: ", postParam);
+//                            logger.debug("Post Params: ", postParam);
                             byte[] bytes = postParam.getBytes("UTF-8");
                             con.setRequestProperty("Content-Length",
                                     Integer.toString(bytes.length));
@@ -162,20 +158,20 @@ public class HttpClientImpl extends HttpClientBase implements HttpClient, HttpRe
                     }
                     res = new HttpResponseImpl(con, CONF);
                     responseCode = con.getResponseCode();
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Response: ");
-                        Map<String, List<String>> responseHeaders = con.getHeaderFields();
-                        for (String key : responseHeaders.keySet()) {
-                            List<String> values = responseHeaders.get(key);
-                            for (String value : values) {
-                                if (key != null) {
-                                    logger.debug(key + ": " + value);
-                                } else {
-                                    logger.debug(value);
-                                }
-                            }
-                        }
-                    }
+//                    if (logger.isDebugEnabled()) {
+//                        logger.debug("Response: ");
+//                        Map<String, List<String>> responseHeaders = con.getHeaderFields();
+//                        for (String key : responseHeaders.keySet()) {
+//                            List<String> values = responseHeaders.get(key);
+//                            for (String value : values) {
+//                                if (key != null) {
+//                                    logger.debug(key + ": " + value);
+//                                } else {
+//                                    logger.debug(value);
+//                                }
+//                            }
+//                        }
+//                    }
                     if(responseCode == HttpURLConnection.HTTP_UNAUTHORIZED){
             			String responseHeader = con.getHeaderField("WWW-Authenticate");
             			if(responseHeader != null && responseHeader.indexOf("expired_token") != -1){
@@ -207,10 +203,10 @@ public class HttpClientImpl extends HttpClientBase implements HttpClient, HttpRe
                 }
             }
             try {
-                if (logger.isDebugEnabled() && res != null) {
-                    res.asString();
-                }
-                logger.debug("Sleeping " + CONF.getHttpRetryIntervalSeconds() + " seconds until the next retry.");
+//                if (logger.isDebugEnabled() && res != null) {
+//                    res.asString();
+//                }
+//                logger.debug("Sleeping " + CONF.getHttpRetryIntervalSeconds() + " seconds until the next retry.");
                 Thread.sleep(CONF.getHttpRetryIntervalSeconds() * 1000);
             } catch (InterruptedException ignore) {
                 //nothing to do
@@ -235,10 +231,10 @@ public class HttpClientImpl extends HttpClientBase implements HttpClient, HttpRe
      * @param connection HttpURLConnection
      */
     private void setHeaders(HttpRequest req, HttpURLConnection connection) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Request: ");
-            logger.debug(req.getMethod().name() + " ", req.getURL());
-        }
+//        if (logger.isDebugEnabled()) {
+//            logger.debug("Request: ");
+//            logger.debug(req.getMethod().name() + " ", req.getURL());
+//        }
 
 //        String authorizationHeader;
 //        if (req.getAuthorization() != null && (authorizationHeader = req.getAuthorization().getAuthorizationHeader(req)) != null) {
@@ -266,10 +262,10 @@ public class HttpClientImpl extends HttpClientBase implements HttpClient, HttpRe
         HttpURLConnection con;
         if (isProxyConfigured() && !isJDK14orEarlier) {
             if (CONF.getHttpProxyUser() != null && !CONF.getHttpProxyUser().equals("")) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Proxy AuthUser: " + CONF.getHttpProxyUser());
-                    logger.debug("Proxy AuthPassword: " + z_T4JInternalStringUtil.maskString(CONF.getHttpProxyPassword()));
-                }
+//                if (logger.isDebugEnabled()) {
+//                    logger.debug("Proxy AuthUser: " + CONF.getHttpProxyUser());
+//                    logger.debug("Proxy AuthPassword: " + z_T4JInternalStringUtil.maskString(CONF.getHttpProxyPassword()));
+//                }
                 Authenticator.setDefault(new Authenticator() {
                     @Override
                     protected PasswordAuthentication
@@ -286,9 +282,9 @@ public class HttpClientImpl extends HttpClientBase implements HttpClient, HttpRe
             }
             final Proxy proxy = new Proxy(Proxy.Type.HTTP, InetSocketAddress
                     .createUnresolved(CONF.getHttpProxyHost(), CONF.getHttpProxyPort()));
-            if (logger.isDebugEnabled()) {
-                logger.debug("Opening proxied connection(" + CONF.getHttpProxyHost() + ":" + CONF.getHttpProxyPort() + ")");
-            }
+//            if (logger.isDebugEnabled()) {
+//                logger.debug("Opening proxied connection(" + CONF.getHttpProxyHost() + ":" + CONF.getHttpProxyPort() + ")");
+//            }
             con = (HttpURLConnection) new URL(url).openConnection(proxy);
         } else {
             con = (HttpURLConnection) new URL(url).openConnection();

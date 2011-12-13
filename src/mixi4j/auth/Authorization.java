@@ -39,19 +39,4 @@ public interface Authorization extends java.io.Serializable {
      */
     OAuthToken getOAuthToken();
 
-    /**
-     * added for mixi4j
-     */
-    ConsumerToken getConsumerToken();
-
-    /**
-     * added for mixi4j
-     */
-    String getRedirectURL();
-
-    /**
-     * added for mixi4j
-     */
-    String getAuthorizationCode();
-
 }

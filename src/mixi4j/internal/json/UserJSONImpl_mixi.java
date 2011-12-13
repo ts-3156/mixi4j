@@ -16,24 +16,32 @@
 
 package mixi4j.internal.json;
 
+import static mixi4j.internal.util.z_M4JInternalParseUtil.getInt;
+import static mixi4j.internal.util.z_M4JInternalParseUtil.getRawString;
+import static mixi4j.internal.util.z_M4JInternalParseUtil.getRawString2;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import mixi4j.MixiException;
-import mixi4j.User_mixi;
+import mixi4j.Status_mixi;
 import mixi4j.conf.Configuration;
 import mixi4j.internal.http.HttpResponse;
-import mixi4j.old.Address;
-import mixi4j.old.Organization;
-import twitter4j.internal.org.json.JSONException;
-import twitter4j.internal.org.json.JSONObject;
+import mixi4j.internal.org.json.JSONArray;
+import mixi4j.internal.org.json.JSONException;
+import mixi4j.internal.org.json.JSONObject;
+import mixi4j.profle.Address;
+import mixi4j.profle.FavoriteThing;
+import mixi4j.profle.Organization;
+import mixi4j.profle.User_mixi;
 
 /**
  * A data class representing Basic user information element
  *
  * @author Yusuke Yamamoto - yusuke at mac.com
  */
-/*package*/ final class UserJSONImpl_mixi extends MixiResponseImpl implements User_mixi, java.io.Serializable {
+/*package*/ final class UserJSONImpl_mixi implements User_mixi, java.io.Serializable {
+///*package*/ final class UserJSONImpl_mixi extends MixiResponseImpl implements User_mixi, java.io.Serializable {
 
 	private String userId;
 	private String displayName;
@@ -51,20 +59,26 @@ import twitter4j.internal.org.json.JSONObject;
 	private String bloodType;
 	private ArrayList<String> interests;
 	private ArrayList<Address> addresses;
+	private ArrayList<FavoriteThing> favoriteThings;
+
+	private Status_mixi status;
+
+	/** 最後にログインしてからの経過分。必ず60の倍数になる。最後にログインしてから15分経過していたら、60が入る */
+	private int lastLogin;
 
     private static final long serialVersionUID = -6345893237975349030L;
 
     /*package*/UserJSONImpl_mixi(HttpResponse res, Configuration conf) throws MixiException {
-        super(res);
-        if (conf.isJSONStoreEnabled()) {
-            DataObjectFactoryUtil.clearThreadLocalMap();
-        }
+//        super(res);
+//        if (conf.isJSONStoreEnabled()) {
+//            DataObjectFactoryUtil.clearThreadLocalMap();
+//        }
 
         JSONObject json = res.asJSONObject();
         init(json);
-        if (conf.isJSONStoreEnabled()) {
-            DataObjectFactoryUtil.registerJSONObject(this, json);
-        }
+//        if (conf.isJSONStoreEnabled()) {
+//            DataObjectFactoryUtil.registerJSONObject(this, json);
+//        }
 
     }
 
@@ -74,21 +88,26 @@ import twitter4j.internal.org.json.JSONObject;
 
     }
 
+    /** Updates API経由だと一部の情報しか送られてこない。その情報を元にUserインスタントを作成する */
+    UserJSONImpl_mixi(String userId, String displayName, String profileUrl, String thumbnailUrl) throws MixiException {
+		this.userId = userId;
+		this.displayName = displayName;
+		this.profileUrl = profileUrl;
+		this.thumbnailUrl = thumbnailUrl;
+
+		// 他のフィールドは全部nullになる。プリミティブ型のみ値を入れる
+		lastLogin = -1;
+    }
+
     /**
      * この中でjsonから値を取り出している
      * @param json
      * @throws MixiException
      */
     private void init(JSONObject json) throws MixiException {
-        try {
-        	/*
-        	 * {"startIndex":0,"totalResults":1,
-        	 * "entry":
-        	 * {"id":"1bwfysyf8nf3j","profileUrl":"http://mixi.jp/show_friend.pl?uid=1bwfysyf8nf3j",
-        	 * "thumbnailUrl":"http://profile.img.mixi.jp/photo/user/1bwfysyf8nf3j_683193527.jpg","displayName":"しのはら"},
-        	 * "itemsPerPage":1}
-        	 */
+//    	System.err.println("debug, UserJSONImpl_mixi, " + json);
 
+    	try {
         	Iterator keys = json.keys();
         	while(keys.hasNext()){
         		String key = (String) keys.next();
@@ -98,10 +117,70 @@ import twitter4j.internal.org.json.JSONObject;
         		}
         	}
 
-        	userId = json.getString("id");
-        	profileUrl = json.getString("profileUrl");
-        	thumbnailUrl = json.getString("thumbnailUrl");
-        	displayName = json.getString("displayName");
+        	userId = getRawString("id", json);
+        	profileUrl = getRawString("profileUrl", json);
+        	thumbnailUrl = getRawString("thumbnailUrl", json);
+        	displayName = getRawString("displayName", json);
+
+            if (!json.isNull("name")) {
+                JSONObject nameJSON = json.getJSONObject("name");
+                givenName = getRawString("givenName", nameJSON);
+                familyName = getRawString("familyName", nameJSON);
+            }
+
+            gender = getRawString("gender", json);
+            birthday = getRawString("birthday", json);
+
+            if (!json.isNull("organizations")) {
+                JSONArray organizationJSON = json.getJSONArray("organizations");
+                organizations = new ArrayList<Organization>();
+                for(int i = 0; i < organizationJSON.length(); i++){
+                	Organization o = new OrganizationJSONImpl(organizationJSON.getJSONObject(i));
+                	if(o != null)
+                		organizations.add(o);
+                }
+            }
+
+            occupation = getRawString("occupation", json);
+            aboutMe = getRawString("aboutMe", json);
+            bloodType = getRawString("bloodType", json);
+
+            if (!json.isNull("interests")) {
+                JSONArray interestJSON = json.getJSONArray("interests");
+                interests = new ArrayList<String>();
+                for(int i = 0; i < interestJSON.length(); i++){
+                	String in = getRawString2(i, interestJSON);
+                	if(in != null)
+                		interests.add(in);
+                }
+            }
+
+            if (!json.isNull("addresses")) {
+                JSONArray addressJSON = json.getJSONArray("addresses");
+                addresses = new ArrayList<Address>();
+                for(int i = 0; i < addressJSON.length(); i++){
+                	Address a = new AddressJSONImpl(addressJSON.getJSONObject(i));
+                	if(a != null)
+                		addresses.add(a);
+                }
+            }
+
+            if (!json.isNull("favoriteThings")) {
+                JSONArray favoriteThingJSON = json.getJSONArray("favoriteThings");
+                favoriteThings = new ArrayList<FavoriteThing>();
+                for(int i = 0; i < favoriteThingJSON.length(); i++){
+                	FavoriteThing f = new FavoriteThingJSONImpl(favoriteThingJSON.getJSONObject(i));
+                	if(f != null)
+                		favoriteThings.add(f);
+                }
+            }
+
+            if (!json.isNull("status")) {
+                JSONObject statusJSON = json.getJSONObject("status");
+                status = new StatusJSONImpl_mixi(statusJSON);
+            }
+
+            lastLogin = getInt("lastLogin", json);
 
         } catch (JSONException jsone) {
             throw new MixiException(jsone.getMessage() + ":" + json.toString(), jsone);
@@ -134,45 +213,23 @@ import twitter4j.internal.org.json.JSONObject;
     @Override
     public String toString() {
         return "UserJSONImpl_mixi{" +
-            	", userId=" + userId +
+            	"userId=" + userId +
+            	", displayName=" + displayName +
             	", profileUrl=" + profileUrl +
             	", thumbnailUrl=" + thumbnailUrl +
-            	", displayName=" + displayName +
-
-//                "id=" + id +
-//                ", name='" + name + '\'' +
-//                ", screenName='" + screenName + '\'' +
-//                ", location='" + location + '\'' +
-//                ", description='" + description + '\'' +
-//                ", isContributorsEnabled=" + isContributorsEnabled +
-//                ", profileImageUrl='" + profileImageUrl + '\'' +
-//                ", profileImageUrlHttps='" + profileImageUrlHttps + '\'' +
-//                ", url='" + url + '\'' +
-//                ", isProtected=" + isProtected +
-//                ", followersCount=" + followersCount +
-//                ", status=" + status +
-//                ", profileBackgroundColor='" + profileBackgroundColor + '\'' +
-//                ", profileTextColor='" + profileTextColor + '\'' +
-//                ", profileLinkColor='" + profileLinkColor + '\'' +
-//                ", profileSidebarFillColor='" + profileSidebarFillColor + '\'' +
-//                ", profileSidebarBorderColor='" + profileSidebarBorderColor + '\'' +
-//                ", profileUseBackgroundImage=" + profileUseBackgroundImage +
-//                ", showAllInlineMedia=" + showAllInlineMedia +
-//                ", friendsCount=" + friendsCount +
-//                ", createdAt=" + createdAt +
-//                ", favouritesCount=" + favouritesCount +
-//                ", utcOffset=" + utcOffset +
-//                ", timeZone='" + timeZone + '\'' +
-//                ", profileBackgroundImageUrl='" + profileBackgroundImageUrl + '\'' +
-//                ", profileBackgroundImageUrlHttps='" + profileBackgroundImageUrlHttps + '\'' +
-//                ", profileBackgroundTiled=" + profileBackgroundTiled +
-//                ", lang='" + lang + '\'' +
-//                ", statusesCount=" + statusesCount +
-//                ", isGeoEnabled=" + isGeoEnabled +
-//                ", isVerified=" + isVerified +
-//                ", translator=" + translator +
-//                ", listedCount=" + listedCount +
-//                ", isFollowRequestSent=" + isFollowRequestSent +
+            	", givenName=" + givenName +
+            	", familyName=" + familyName +
+            	", gender=" + gender +
+            	", birthday=" + birthday +
+            	", organizations=" + organizations +
+            	", occupation=" + occupation +
+            	", aboutMe=" + aboutMe +
+            	", bloodType=" + bloodType +
+            	", interests=" + interests +
+            	", addresses=" + addresses +
+            	", favoriteThings=" + favoriteThings +
+            	", status=" + status +
+            	", lastLogin=" + lastLogin +
                 '}';
     }
 
@@ -231,5 +288,49 @@ import twitter4j.internal.org.json.JSONObject;
 	public ArrayList<Address> getAddresses() {
 		return addresses;
 	}
+
+	@Override
+	public ArrayList<FavoriteThing> getFavoriteThings() {
+		return favoriteThings;
+	}
+
+	@Override
+	public Status_mixi getStatus() {
+		return status;
+	}
+
+	@Override
+	public int getLastLogin() {
+		return lastLogin;
+	}
+
+    static ArrayList<User_mixi> createUserArrayList(HttpResponse res, Configuration conf) throws MixiException {
+        try {
+//            if (conf.isJSONStoreEnabled()) {
+//                DataObjectFactoryUtil.clearThreadLocalMap();
+//            }
+            JSONObject json = res.asJSONObject();
+
+            JSONArray list = json.getJSONArray("entry");
+            int size = list.length();
+            ArrayList<User_mixi> users = new ArrayList<User_mixi>(size);
+            for (int i = 0; i < size; i++) {
+                JSONObject userJson = list.getJSONObject(i);
+                User_mixi user = new UserJSONImpl_mixi(userJson);
+//                if (conf.isJSONStoreEnabled()) {
+//                    DataObjectFactoryUtil.registerJSONObject(user, userJson);
+//                }
+                users.add(user);
+            }
+//            if (conf.isJSONStoreEnabled()) {
+//                DataObjectFactoryUtil.registerJSONObject(users, json);
+//            }
+            return users;
+        } catch (JSONException jsone) {
+            throw new MixiException(jsone);
+        } catch (MixiException me) {
+            throw me;
+        }
+    }
 
 }

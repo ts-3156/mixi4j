@@ -17,14 +17,6 @@
 package mixi4j;
 
 
-import static mixi4j.internal.http.HttpResponseCode.ENHANCE_YOUR_CLAIM;
-import static mixi4j.internal.http.HttpResponseCode.SERVICE_UNAVAILABLE;
-
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import mixi4j.auth.AccessToken;
 import mixi4j.auth.Authorization;
 import mixi4j.auth.AuthorizationFactory;
@@ -36,9 +28,6 @@ import mixi4j.auth.OAuthSupport;
 import mixi4j.auth.RequestToken;
 import mixi4j.conf.Configuration;
 import mixi4j.internal.http.HttpClientWrapper;
-import mixi4j.internal.http.HttpResponse;
-import mixi4j.internal.http.HttpResponseEvent;
-import mixi4j.internal.http.HttpResponseListener;
 import mixi4j.internal.http.XAuthAuthorization;
 import mixi4j.internal.json.z_M4JInternalFactory;
 import mixi4j.internal.json.z_M4JInternalJSONImplFactory;
@@ -48,13 +37,14 @@ import mixi4j.internal.json.z_M4JInternalJSONImplFactory;
  *
  * @author Yusuke Yamamoto - yusuke at mac.com
  */
-abstract class MixiBaseImpl implements java.io.Serializable, OAuthSupport, HttpResponseListener {
+abstract class MixiBaseImpl implements java.io.Serializable, OAuthSupport {
+//abstract class MixiBaseImpl implements java.io.Serializable, OAuthSupport, HttpResponseListener {
     protected Configuration conf;
     protected transient String screenName = null;
     protected transient long id = 0;
 
     protected transient HttpClientWrapper http;
-    private List<RateLimitStatusListener> rateLimitStatusListeners = new ArrayList<RateLimitStatusListener>(0);
+//    private List<RateLimitStatusListener> rateLimitStatusListeners = new ArrayList<RateLimitStatusListener>(0);
 
     protected z_M4JInternalFactory factory;
 
@@ -86,7 +76,7 @@ abstract class MixiBaseImpl implements java.io.Serializable, OAuthSupport, HttpR
             }
         }
         http = new HttpClientWrapper(conf);
-        http.setHttpResponseListener(this);
+//        http.setHttpResponseListener(this);
         setFactory();
     }
 
@@ -111,7 +101,7 @@ abstract class MixiBaseImpl implements java.io.Serializable, OAuthSupport, HttpR
             }
             if (null == screenName) {
                 // retrieve the screen name if this instance is authenticated with OAuth or email address
-                fillInIDAndScreenName();
+//                fillInIDAndScreenName();
             }
         }
         return screenName;
@@ -126,60 +116,62 @@ abstract class MixiBaseImpl implements java.io.Serializable, OAuthSupport, HttpR
                     "Neither user ID/password combination nor OAuth consumer key/secret combination supplied");
         }
         if (0 == id) {
-            fillInIDAndScreenName();
+//            fillInIDAndScreenName();
         }
         // retrieve the screen name if this instance is authenticated with OAuth or email address
         return id;
     }
 
-    protected User fillInIDAndScreenName() throws MixiException {
-        ensureAuthorizationEnabled();
-        User user = factory.createUser(http.get(conf.getRestBaseURL() + "account/verify_credentials.json?include_entities="
-                + conf.isIncludeEntitiesEnabled(), auth));
-        this.screenName = user.getScreenName();
-        this.id = user.getId();
-        return user;
-    }
+//    protected User fillInIDAndScreenName() throws MixiException {
+//        ensureAuthorizationEnabled();
+////        User user = factory.createUser(http.get(conf.getRestBaseURL() + "account/verify_credentials.json?include_entities="
+////                + conf.isIncludeEntitiesEnabled(), auth));
+////        this.screenName = user.getScreenName();
+////        this.id = user.getId();
+////        return user;
+//        return null;
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void addRateLimitStatusListener(RateLimitStatusListener listener) {
-        rateLimitStatusListeners.add(listener);
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public void addRateLimitStatusListener(RateLimitStatusListener listener) {
+//        rateLimitStatusListeners.add(listener);
+//    }
 
-    public void httpResponseReceived(HttpResponseEvent event) {
-        if (rateLimitStatusListeners.size() != 0) {
-            HttpResponse res = event.getResponse();
-            MixiException te = event.getTwitterException();
-            RateLimitStatus rateLimitStatus;
-            int statusCode;
-            if (te != null) {
-                rateLimitStatus = te.getRateLimitStatus();
-                statusCode = te.getStatusCode();
-            } else {
-                rateLimitStatus = z_M4JInternalJSONImplFactory.createRateLimitStatusFromResponseHeader(res);
-                statusCode = res.getStatusCode();
-            }
-            if (rateLimitStatus != null) {
-                RateLimitStatusEvent statusEvent
-                        = new RateLimitStatusEvent(this, rateLimitStatus, event.isAuthenticated());
-                if (statusCode == ENHANCE_YOUR_CLAIM
-                        || statusCode == SERVICE_UNAVAILABLE) {
-                    // EXCEEDED_RATE_LIMIT_QUOTA is returned by Rest API
-                    // SERVICE_UNAVAILABLE is returned by Search API
-                    for (RateLimitStatusListener listener : rateLimitStatusListeners) {
-                        listener.onRateLimitStatus(statusEvent);
-                        listener.onRateLimitReached(statusEvent);
-                    }
-                } else {
-                    for (RateLimitStatusListener listener : rateLimitStatusListeners) {
-                        listener.onRateLimitStatus(statusEvent);
-                    }
-                }
-            }
-        }
-    }
+//    public void httpResponseReceived(HttpResponseEvent event) {
+//        if (rateLimitStatusListeners.size() != 0) {
+//            HttpResponse res = event.getResponse();
+//            MixiException te = event.getTwitterException();
+//            RateLimitStatus rateLimitStatus;
+//            int statusCode;
+//            if (te != null) {
+//                rateLimitStatus = te.getRateLimitStatus();
+//                statusCode = te.getStatusCode();
+//            } else {
+////                rateLimitStatus = z_M4JInternalJSONImplFactory.createRateLimitStatusFromResponseHeader(res);
+//                rateLimitStatus = null;
+//                statusCode = res.getStatusCode();
+//            }
+//            if (rateLimitStatus != null) {
+//                RateLimitStatusEvent statusEvent
+//                        = new RateLimitStatusEvent(this, rateLimitStatus, event.isAuthenticated());
+//                if (statusCode == ENHANCE_YOUR_CLAIM
+//                        || statusCode == SERVICE_UNAVAILABLE) {
+//                    // EXCEEDED_RATE_LIMIT_QUOTA is returned by Rest API
+//                    // SERVICE_UNAVAILABLE is returned by Search API
+//                    for (RateLimitStatusListener listener : rateLimitStatusListeners) {
+//                        listener.onRateLimitStatus(statusEvent);
+//                        listener.onRateLimitReached(statusEvent);
+//                    }
+//                } else {
+//                    for (RateLimitStatusListener listener : rateLimitStatusListeners) {
+//                        listener.onRateLimitStatus(statusEvent);
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     /**
      * {@inheritDoc}
@@ -216,27 +208,27 @@ abstract class MixiBaseImpl implements java.io.Serializable, OAuthSupport, HttpR
         }
     }
 
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        out.writeObject(conf);
-        out.writeObject(auth);
-        List<RateLimitStatusListener> serializableRateLimitStatusListeners = new ArrayList<RateLimitStatusListener>(0);
-        for (RateLimitStatusListener listener : rateLimitStatusListeners) {
-            if (listener instanceof java.io.Serializable) {
-                serializableRateLimitStatusListeners.add(listener);
-            }
-        }
-        out.writeObject(serializableRateLimitStatusListeners);
-    }
+//    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+//        out.writeObject(conf);
+//        out.writeObject(auth);
+//        List<RateLimitStatusListener> serializableRateLimitStatusListeners = new ArrayList<RateLimitStatusListener>(0);
+//        for (RateLimitStatusListener listener : rateLimitStatusListeners) {
+//            if (listener instanceof java.io.Serializable) {
+//                serializableRateLimitStatusListeners.add(listener);
+//            }
+//        }
+//        out.writeObject(serializableRateLimitStatusListeners);
+//    }
 
-    private void readObject(ObjectInputStream stream)
-            throws IOException, ClassNotFoundException {
-        conf = (Configuration) stream.readObject();
-        auth = (Authorization) stream.readObject();
-        rateLimitStatusListeners = (List<RateLimitStatusListener>) stream.readObject();
-        http = new HttpClientWrapper(conf);
-        http.setHttpResponseListener(this);
-        setFactory();
-    }
+//    private void readObject(ObjectInputStream stream)
+//            throws IOException, ClassNotFoundException {
+//        conf = (Configuration) stream.readObject();
+//        auth = (Authorization) stream.readObject();
+//        rateLimitStatusListeners = (List<RateLimitStatusListener>) stream.readObject();
+//        http = new HttpClientWrapper(conf);
+//        http.setHttpResponseListener(this);
+//        setFactory();
+//    }
 
 
     // methods declared in OAuthSupport interface
@@ -396,19 +388,20 @@ abstract class MixiBaseImpl implements java.io.Serializable, OAuthSupport, HttpR
         if (!conf.equals(that.conf)) return false;
         if (http != null ? !http.equals(that.http) : that.http != null)
             return false;
-        if (!rateLimitStatusListeners.equals(that.rateLimitStatusListeners))
-            return false;
+//        if (!rateLimitStatusListeners.equals(that.rateLimitStatusListeners))
+//            return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = conf.hashCode();
-        result = 31 * result + (http != null ? http.hashCode() : 0);
-        result = 31 * result + rateLimitStatusListeners.hashCode();
-        result = 31 * result + (auth != null ? auth.hashCode() : 0);
-        return result;
+//        int result = conf.hashCode();
+//        result = 31 * result + (http != null ? http.hashCode() : 0);
+//        result = 31 * result + rateLimitStatusListeners.hashCode();
+//        result = 31 * result + (auth != null ? auth.hashCode() : 0);
+//        return result;
+    	return -1;
     }
 
     @Override
@@ -416,7 +409,7 @@ abstract class MixiBaseImpl implements java.io.Serializable, OAuthSupport, HttpR
         return "TwitterBase{" +
                 "conf=" + conf +
                 ", http=" + http +
-                ", rateLimitStatusListeners=" + rateLimitStatusListeners +
+//                ", rateLimitStatusListeners=" + rateLimitStatusListeners +
                 ", auth=" + auth +
                 '}';
     }

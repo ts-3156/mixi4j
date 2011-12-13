@@ -93,19 +93,4 @@ public class BasicAuthorization implements Authorization, java.io.Serializable {
 		return null;
 	}
 
-	@Override
-	public ConsumerToken getConsumerToken() {
-		return null;
-	}
-
-	@Override
-	public String getRedirectURL() {
-		return null;
-	}
-
-	@Override
-	public String getAuthorizationCode() {
-		return null;
-	}
-
 }

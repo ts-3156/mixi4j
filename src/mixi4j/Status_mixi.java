@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package mixi4j;
 
-import mixi4j.api.PeopleMethods;
-import mixi4j.api.UpdatesMethods;
-import mixi4j.auth.OAuthSupport;
 
 /**
+ * A data interface representing one single status of a user.
+ *
  * @author Yusuke Yamamoto - yusuke at mac.com
- * @since Twitter4J 2.2.0
  */
-public interface Mixi extends java.io.Serializable,
-        OAuthSupport,
-        MixiBase,
-        PeopleMethods,
-        UpdatesMethods
-{}
+public interface Status_mixi extends Comparable<Status_mixi>, java.io.Serializable {
+//public interface Status_mixi extends Comparable<Status_mixi>, MixiResponse, EntitySupport, java.io.Serializable {
+
+	public String getUser();
+	public String getLink();
+	public String getPostedTime();
+	public String getText();
+}

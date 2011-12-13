@@ -15,8 +15,10 @@ http://developer.mixi.co.jp/connect/mixi_graph_api/api_auth/
 
 ◆mixi4jで出来ること◆
 
-mixi4j-0.0.1で実装されているのは、
+mixi4j-0.0.2で実装されているのは、
 
+・認証を与えられたユーザのmixi voice取得
+・認証を与えられたユーザのマイミクのmixi voice取得
 ・認証を与えられたユーザのプロフィール情報取得
 ・認証を与えられたユーザのマイミクのプロフィール情報取得
 

@@ -16,39 +16,41 @@
 
 package mixi4j.api;
 
+import java.util.ArrayList;
+
 import mixi4j.MixiException;
-import mixi4j.User_mixi;
+import mixi4j.profle.User_mixi;
 
 /**
- * @author Joern Huxhorn - jhuxhorn at googlemail.com
+ *
+ * プロフィール情報を取得するAPI
+ * メモのために、関係する全ての権限を列挙しておく。
+ *
+r_profile
+
+r_profile_status
+r_profile_last_login
+
+r_profile_name
+r_profile_gender
+r_profile_birthday
+r_profile_blood_type
+r_profile_location
+r_profile_hometown
+r_profile_about_me
+r_profile_occupation
+r_profile_interests
+r_profile_favorite_things
+r_profile_organizations
+
  */
 public interface PeopleMethods {
-//    /**
-//     * Returns extended information of a given user, specified by ID or screen name as per the required id parameter. The author's most recent status will be returned inline.
-//     * <br>This method calls http://api.twitter.com/1/users/show.json
-//     *
-//     * @param screenName the screen name of the user for whom to request the detail
-//     * @return User
-//     * @throws MixiException when Twitter service or network is unavailable
-//     * @see <a href="https://dev.twitter.com/docs/api/1/get/users/show">GET users/show | Twitter Developers</a>
-//     */
-//    User showUser(String screenName) throws MixiException;
 
-//    /**
-//     * Returns extended information of a given user, specified by ID or screen name as per the required id parameter. The author's most recent status will be returned inline.
-//     * <br>This method calls http://api.twitter.com/1/users/show.json
-//     *
-//     * @param userId the ID of the user for whom to request the detail
-//     * @return users
-//     * @throws TwitterException when Twitter service or network is unavailable
-//     * @see <a href="https://dev.twitter.com/docs/api/1/get/users/show">GET users/show | Twitter Developers</a>
-//     * @since Twitter4J 2.1.0
-//     */
-//    User showUser(long userId) throws MixiException;
+	User_mixi showUser(String userId) throws MixiException;
 
-  User_mixi showUser(String userId) throws MixiException;
+    public User_mixi showUser() throws MixiException;
 
-    User_mixi showUser() throws MixiException;
+    public ArrayList<User_mixi> getFriends() throws MixiException;
 
 //    /**
 //     * Return up to 100 users worth of extended information, specified by either ID, screen name, or combination of the two. The author's most recent status (if the authenticating user has permission) will be returned inline.

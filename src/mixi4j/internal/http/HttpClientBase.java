@@ -4,10 +4,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 
-import twitter4j.internal.logging.Logger;
-
 public class HttpClientBase implements Serializable {
-    private static final Logger logger = Logger.getLogger(HttpClientBase.class);
     protected final HttpClientConfiguration CONF;
 
     public HttpClientBase(HttpClientConfiguration conf) {
@@ -22,7 +19,7 @@ public class HttpClientBase implements Serializable {
     }
     public void write(DataOutputStream out, String outStr) throws IOException {
         out.writeBytes(outStr);
-        logger.debug(outStr);
+//        logger.debug(outStr);
     }
 
     @Override

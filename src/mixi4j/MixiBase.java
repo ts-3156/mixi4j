@@ -51,14 +51,14 @@ public interface MixiBase {
      */
     long getId() throws MixiException, IllegalStateException;
 
-    /**
-     * Registers a RateLimitStatusListener for account associated rate limits
-     *
-     * @param listener the listener to be added
-     * @see <a href="https://dev.twitter.com/docs/rate-limiting">Rate Limiting | Twitter Developers</a>
-     * @since Twitter4J 2.1.12
-     */
-    void addRateLimitStatusListener(RateLimitStatusListener listener);
+//    /**
+//     * Registers a RateLimitStatusListener for account associated rate limits
+//     *
+//     * @param listener the listener to be added
+//     * @see <a href="https://dev.twitter.com/docs/rate-limiting">Rate Limiting | Twitter Developers</a>
+//     * @since Twitter4J 2.1.12
+//     */
+//    void addRateLimitStatusListener(RateLimitStatusListener listener);
 
     /**
      * Returns the authorization scheme for this instance.<br>

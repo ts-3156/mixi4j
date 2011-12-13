@@ -17,26 +17,16 @@
 
 package mixi4j;
 
-import twitter4j.api.HelpMethods.Language;
-import twitter4j.internal.org.json.JSONException;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import mixi4j.auth.Authorization;
-import mixi4j.auth.MixiToken;
 import mixi4j.conf.Configuration;
 import mixi4j.internal.http.HttpParameter;
 import mixi4j.internal.http.HttpResponse;
-import mixi4j.internal.util.z_T4JInternalStringUtil;
-
-import static mixi4j.internal.http.HttpParameter.getParameterArray;
+import mixi4j.internal.org.json.JSONException;
+import mixi4j.profle.User_mixi;
 
 /**
  * A java representation of the <a href="https://dev.twitter.com/docs/api">Twitter REST API</a><br>
@@ -48,16 +38,9 @@ import static mixi4j.internal.http.HttpParameter.getParameterArray;
 class MixiImpl extends MixiBaseImpl implements Mixi {
     private static final long serialVersionUID = -1486360080128882436L;
 
-    private final HttpParameter INCLUDE_ENTITIES;
-    private final HttpParameter INCLUDE_RTS;
-    private final HttpParameter INCLUDE_MY_RETWEET;
-
     /*package*/
     MixiImpl(Configuration conf, Authorization auth) {
         super(conf, auth);
-        INCLUDE_ENTITIES = new HttpParameter("include_entities", conf.isIncludeEntitiesEnabled());
-        INCLUDE_RTS = new HttpParameter("include_rts", conf.isIncludeRTsEnabled());
-        INCLUDE_MY_RETWEET = new HttpParameter("include_my_retweet", 1);
     }
 
     /** ちょっとしたユーティリティメソッド */
@@ -96,30 +79,6 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public QueryResult search(Query query) throws MixiException {
-        return factory.createQueryResult(get(conf.getSearchBaseURL()
-                + "search.json", query.asHttpParameterArray(INCLUDE_ENTITIES)), query);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Trends> getDailyTrends() throws MixiException {
-        return factory.createTrendsList(get(conf.getRestBaseURL() + "trends/daily.json"));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Trends> getDailyTrends(Date date, boolean excludeHashTags) throws MixiException {
-        return factory.createTrendsList(get(conf.getRestBaseURL()
-                + "trends/daily.json?date=" + toDateStr(date)
-                + (excludeHashTags ? "&exclude=hashtags" : "")));
-    }
-
     private String toDateStr(Date date) {
         if (null == date) {
             date = new Date();
@@ -128,359 +87,273 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
         return sdf.format(date);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Trends> getWeeklyTrends() throws MixiException {
-        return factory.createTrendsList(get(conf.getRestBaseURL()
-                + "trends/weekly.json"));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getUserTimeline(String screenName, Paging paging)
+//            throws MixiException {
+//        return factory.createStatusList(get(conf.getRestBaseURL()
+//                + "statuses/user_timeline.json",
+//                mergeParameters(new HttpParameter[]{new HttpParameter("screen_name", screenName)
+//                        , INCLUDE_RTS
+//                        , INCLUDE_ENTITIES
+//                        , INCLUDE_MY_RETWEET}
+//                        , paging.asPostParameterArray())));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getUserTimeline(String screenName) throws MixiException {
+//        return getUserTimeline(screenName, new Paging());
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getUserTimeline(long userId) throws MixiException {
+//        return getUserTimeline(userId, new Paging());
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Trends> getWeeklyTrends(Date date, boolean excludeHashTags) throws MixiException {
-        return factory.createTrendsList(get(conf.getRestBaseURL()
-                + "trends/weekly.json?date=" + toDateStr(date)
-                + (excludeHashTags ? "&exclude=hashtags" : "")));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getUserTimeline() throws
+//            MixiException {
+//        return getUserTimeline(new Paging());
+//    }
 
-    /* Status Methods */
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getUserTimeline(Paging paging) throws
+//            MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatusList(get(conf.getRestBaseURL() +
+//                "statuses/user_timeline.json",
+//                mergeParameters(new HttpParameter[]{INCLUDE_RTS
+//                        , INCLUDE_ENTITIES
+//                        , INCLUDE_MY_RETWEET}
+//                        , paging.asPostParameterArray())));
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getPublicTimeline() throws
-            MixiException {
-        return factory.createStatusList(get(conf.getRestBaseURL() +
-                "statuses/public_timeline.json?include_my_retweet=1&include_entities=" + conf.isIncludeEntitiesEnabled() + "&include_rts=" + conf.isIncludeRTsEnabled()));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getMentions() throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatusList(get(conf.getRestBaseURL() +
+//                "statuses/mentions.json?include_entities="
+//                + conf.isIncludeEntitiesEnabled() + "&include_rts=" + conf.isIncludeRTsEnabled()));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getMentions(Paging paging) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatusList(get(conf.getRestBaseURL()
+//                + "statuses/mentions.json",
+//                mergeParameters(new HttpParameter[]{INCLUDE_RTS
+//                        , INCLUDE_ENTITIES}
+//                        , paging.asPostParameterArray())));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getRetweetedByMe() throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatusList(get(conf.getRestBaseURL()
+//                + "statuses/retweeted_by_me.json?include_entities=" + conf.isIncludeEntitiesEnabled()));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getRetweetedByMe(Paging paging) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatusList(get(conf.getRestBaseURL()
+//                + "statuses/retweeted_by_me.json", mergeParameters(paging.asPostParameterArray()
+//                , INCLUDE_ENTITIES)));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getRetweetedToMe() throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatusList(get(conf.getRestBaseURL()
+//                + "statuses/retweeted_to_me.json?include_entities="
+//                + conf.isIncludeEntitiesEnabled()));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getRetweetedToMe(Paging paging) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatusList(get(conf.getRestBaseURL() +
+//                "statuses/retweeted_to_me.json", mergeParameters(paging.asPostParameterArray()
+//                , INCLUDE_ENTITIES)));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getRetweetsOfMe() throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatusList(get(conf.getRestBaseURL()
+//                + "statuses/retweets_of_me.json?include_entities="
+//                + conf.isIncludeEntitiesEnabled()));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getRetweetsOfMe(Paging paging) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatusList(get(conf.getRestBaseURL()
+//                + "statuses/retweets_of_me.json", mergeParameters(paging.asPostParameterArray()
+//                , INCLUDE_ENTITIES)));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getRetweetedToUser(String screenName, Paging paging) throws MixiException {
+//        return factory.createStatusList(get(conf.getRestBaseURL() +
+//                "statuses/retweeted_to_user.json", mergeParameters(paging.asPostParameterArray()
+//                , new HttpParameter[]{
+//                new HttpParameter("screen_name", screenName)
+//                , INCLUDE_ENTITIES})));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getRetweetedToUser(long userId, Paging paging) throws MixiException {
+//        return factory.createStatusList(get(conf.getRestBaseURL() +
+//                "statuses/retweeted_to_user.json", mergeParameters(paging.asPostParameterArray()
+//                , new HttpParameter[]{
+//                new HttpParameter("user_id", userId)
+//                , INCLUDE_ENTITIES})));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getRetweetedByUser(String screenName, Paging paging) throws MixiException {
+//        return factory.createStatusList(get(conf.getRestBaseURL() +
+//                "statuses/retweeted_by_user.json", mergeParameters(paging.asPostParameterArray()
+//                , new HttpParameter[]{
+//                new HttpParameter("screen_name", screenName)
+//                , INCLUDE_ENTITIES})));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getRetweetedByUser(long userId, Paging paging) throws MixiException {
+//        return factory.createStatusList(get(conf.getRestBaseURL() +
+//                "statuses/retweeted_by_user.json", mergeParameters(paging.asPostParameterArray()
+//                , new HttpParameter[]{
+//                new HttpParameter("user_id", userId)
+//                , INCLUDE_ENTITIES})));
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getHomeTimeline() throws
-            MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL() + "statuses/home_timeline.json?include_my_retweet=1&include_entities=" + conf.isIncludeEntitiesEnabled()));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<User> getRetweetedBy(long statusId) throws MixiException {
+//        return getRetweetedBy(statusId, new Paging(1, 100));
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getHomeTimeline(Paging paging) throws
-            MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL()
-                + "statuses/home_timeline.json", mergeParameters(paging.asPostParameterArray(), new HttpParameter[]{INCLUDE_ENTITIES, INCLUDE_MY_RETWEET})));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<User> getRetweetedBy(long statusId, Paging paging) throws MixiException {
+//        return factory.createUserList(get(conf.getRestBaseURL()
+//                + "statuses/" + statusId + "/retweeted_by.json",
+//                paging.asPostParameterArray()));
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getFriendsTimeline() throws
-            MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL()
-                + "statuses/friends_timeline.json?include_my_retweet=1&include_entities="
-                + conf.isIncludeEntitiesEnabled() + "&include_rts=" + conf.isIncludeRTsEnabled()));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public IDs getRetweetedByIDs(long statusId) throws MixiException {
+//        return getRetweetedByIDs(statusId, new Paging(1, 100));
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    @SuppressWarnings("deprecation")
-    public ResponseList<Status> getFriendsTimeline(Paging paging) throws
-            MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL()
-                + "statuses/friends_timeline.json",
-                mergeParameters(new HttpParameter[]{INCLUDE_RTS, INCLUDE_ENTITIES, INCLUDE_MY_RETWEET}
-                        , paging.asPostParameterArray())));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public IDs getRetweetedByIDs(long statusId, Paging paging) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createIDs(get(conf.getRestBaseURL()
+//                + "statuses/" + statusId + "/retweeted_by/ids.json",
+//                paging.asPostParameterArray()));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public Status showStatus(long id) throws MixiException {
+//        return factory.createStatus(get(conf.getRestBaseURL() + "statuses/show/" + id + ".json?include_entities="
+//                + conf.isIncludeEntitiesEnabled()));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public Status updateStatus(String status) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatus(post(conf.getRestBaseURL() + "statuses/update.json",
+//                new HttpParameter[]{new HttpParameter("status", status)
+//                        , INCLUDE_ENTITIES}));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public Status updateStatus(StatusUpdate status) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        String url = status.isWithMedia() ?
+//                conf.getUploadBaseURL() + "statuses/update_with_media.json" :
+//                conf.getRestBaseURL() + "statuses/update.json";
+//        return factory.createStatus(post(url,
+//                status.asHttpParameterArray(INCLUDE_ENTITIES)));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public Status destroyStatus(long statusId) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatus(post(conf.getRestBaseURL()
+//                + "statuses/destroy/" + statusId + ".json?include_entities="
+//                + conf.isIncludeEntitiesEnabled()));
+//    }
 
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getUserTimeline(String screenName, Paging paging)
-            throws MixiException {
-        return factory.createStatusList(get(conf.getRestBaseURL()
-                + "statuses/user_timeline.json",
-                mergeParameters(new HttpParameter[]{new HttpParameter("screen_name", screenName)
-                        , INCLUDE_RTS
-                        , INCLUDE_ENTITIES
-                        , INCLUDE_MY_RETWEET}
-                        , paging.asPostParameterArray())));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getUserTimeline(long userId, Paging paging)
-            throws MixiException {
-        return factory.createStatusList(get(conf.getRestBaseURL()
-                + "statuses/user_timeline.json",
-                mergeParameters(new HttpParameter[]{new HttpParameter("user_id", userId)
-                        , INCLUDE_RTS
-                        , INCLUDE_ENTITIES
-                        , INCLUDE_MY_RETWEET}
-                        , paging.asPostParameterArray())));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getUserTimeline(String screenName) throws MixiException {
-        return getUserTimeline(screenName, new Paging());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getUserTimeline(long userId) throws MixiException {
-        return getUserTimeline(userId, new Paging());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getUserTimeline() throws
-            MixiException {
-        return getUserTimeline(new Paging());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getUserTimeline(Paging paging) throws
-            MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL() +
-                "statuses/user_timeline.json",
-                mergeParameters(new HttpParameter[]{INCLUDE_RTS
-                        , INCLUDE_ENTITIES
-                        , INCLUDE_MY_RETWEET}
-                        , paging.asPostParameterArray())));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getMentions() throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL() +
-                "statuses/mentions.json?include_entities="
-                + conf.isIncludeEntitiesEnabled() + "&include_rts=" + conf.isIncludeRTsEnabled()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getMentions(Paging paging) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL()
-                + "statuses/mentions.json",
-                mergeParameters(new HttpParameter[]{INCLUDE_RTS
-                        , INCLUDE_ENTITIES}
-                        , paging.asPostParameterArray())));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getRetweetedByMe() throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL()
-                + "statuses/retweeted_by_me.json?include_entities=" + conf.isIncludeEntitiesEnabled()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getRetweetedByMe(Paging paging) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL()
-                + "statuses/retweeted_by_me.json", mergeParameters(paging.asPostParameterArray()
-                , INCLUDE_ENTITIES)));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getRetweetedToMe() throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL()
-                + "statuses/retweeted_to_me.json?include_entities="
-                + conf.isIncludeEntitiesEnabled()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getRetweetedToMe(Paging paging) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL() +
-                "statuses/retweeted_to_me.json", mergeParameters(paging.asPostParameterArray()
-                , INCLUDE_ENTITIES)));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getRetweetsOfMe() throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL()
-                + "statuses/retweets_of_me.json?include_entities="
-                + conf.isIncludeEntitiesEnabled()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getRetweetsOfMe(Paging paging) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL()
-                + "statuses/retweets_of_me.json", mergeParameters(paging.asPostParameterArray()
-                , INCLUDE_ENTITIES)));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getRetweetedToUser(String screenName, Paging paging) throws MixiException {
-        return factory.createStatusList(get(conf.getRestBaseURL() +
-                "statuses/retweeted_to_user.json", mergeParameters(paging.asPostParameterArray()
-                , new HttpParameter[]{
-                new HttpParameter("screen_name", screenName)
-                , INCLUDE_ENTITIES})));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getRetweetedToUser(long userId, Paging paging) throws MixiException {
-        return factory.createStatusList(get(conf.getRestBaseURL() +
-                "statuses/retweeted_to_user.json", mergeParameters(paging.asPostParameterArray()
-                , new HttpParameter[]{
-                new HttpParameter("user_id", userId)
-                , INCLUDE_ENTITIES})));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getRetweetedByUser(String screenName, Paging paging) throws MixiException {
-        return factory.createStatusList(get(conf.getRestBaseURL() +
-                "statuses/retweeted_by_user.json", mergeParameters(paging.asPostParameterArray()
-                , new HttpParameter[]{
-                new HttpParameter("screen_name", screenName)
-                , INCLUDE_ENTITIES})));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getRetweetedByUser(long userId, Paging paging) throws MixiException {
-        return factory.createStatusList(get(conf.getRestBaseURL() +
-                "statuses/retweeted_by_user.json", mergeParameters(paging.asPostParameterArray()
-                , new HttpParameter[]{
-                new HttpParameter("user_id", userId)
-                , INCLUDE_ENTITIES})));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<User> getRetweetedBy(long statusId) throws MixiException {
-        return getRetweetedBy(statusId, new Paging(1, 100));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<User> getRetweetedBy(long statusId, Paging paging) throws MixiException {
-        return factory.createUserList(get(conf.getRestBaseURL()
-                + "statuses/" + statusId + "/retweeted_by.json",
-                paging.asPostParameterArray()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public IDs getRetweetedByIDs(long statusId) throws MixiException {
-        return getRetweetedByIDs(statusId, new Paging(1, 100));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public IDs getRetweetedByIDs(long statusId, Paging paging) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createIDs(get(conf.getRestBaseURL()
-                + "statuses/" + statusId + "/retweeted_by/ids.json",
-                paging.asPostParameterArray()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Status showStatus(long id) throws MixiException {
-        return factory.createStatus(get(conf.getRestBaseURL() + "statuses/show/" + id + ".json?include_entities="
-                + conf.isIncludeEntitiesEnabled()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Status updateStatus(String status) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatus(post(conf.getRestBaseURL() + "statuses/update.json",
-                new HttpParameter[]{new HttpParameter("status", status)
-                        , INCLUDE_ENTITIES}));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Status updateStatus(StatusUpdate status) throws MixiException {
-        ensureAuthorizationEnabled();
-        String url = status.isWithMedia() ?
-                conf.getUploadBaseURL() + "statuses/update_with_media.json" :
-                conf.getRestBaseURL() + "statuses/update.json";
-        return factory.createStatus(post(url,
-                status.asHttpParameterArray(INCLUDE_ENTITIES)));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Status destroyStatus(long statusId) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatus(post(conf.getRestBaseURL()
-                + "statuses/destroy/" + statusId + ".json?include_entities="
-                + conf.isIncludeEntitiesEnabled()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Status retweetStatus(long statusId) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatus(post(conf.getRestBaseURL()
-                + "statuses/retweet/" + statusId + ".json?include_entities="
-                + conf.isIncludeEntitiesEnabled()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getRetweets(long statusId) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL()
-                + "statuses/retweets/" + statusId + ".json?count=100&include_entities="
-                + conf.isIncludeEntitiesEnabled()));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public Status retweetStatus(long statusId) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatus(post(conf.getRestBaseURL()
+//                + "statuses/retweet/" + statusId + ".json?include_entities="
+//                + conf.isIncludeEntitiesEnabled()));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getRetweets(long statusId) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatusList(get(conf.getRestBaseURL()
+//                + "statuses/retweets/" + statusId + ".json?count=100&include_entities="
+//                + conf.isIncludeEntitiesEnabled()));
+//    }
 
     /* User Methods */
 
@@ -496,100 +369,135 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
      * userIdで指定されたユーザのデータを返す
      */
     public User_mixi showUser(String userId) throws MixiException {
-        return factory.createUser_mixi(get(conf.getRestBaseURL() + "people/" + userId + "?fields=@all"));
+        return factory.createUser(get(conf.getRestBaseURL() + "people/" + userId + "?fields=@all"));
     }
-
-//    /**
-//     * {@inheritDoc}
-//     */
-//    public User showUser(long userId) throws MixiException {
-//        return factory.createUser(get(conf.getRestBaseURL() + "users/show.json?include_entities="
-//                + conf.isIncludeEntitiesEnabled() + "&user_id=" + userId));
-//    }
-
-//    /**
-//     * mixi4jのために暫定作り直し
-//     */
-//    public User showUser(long userId) throws MixiException {
-//        return factory.createUser(get(conf.getRestBaseURL() + "users/show.json?include_entities="
-//                + conf.isIncludeEntitiesEnabled() + "&user_id=" + userId));
-//    }
 
     /**
      * 認証のあるユーザのデータを返す
      */
+    @Override
     public User_mixi showUser() throws MixiException {
-        return factory.createUser_mixi(get(conf.getRestBaseURL() + "people/@me/@self?fields=@all"));
+        return factory.createUser(get(conf.getRestBaseURL() + "people/@me/@self?fields=@all"));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<User> lookupUsers(String[] screenNames) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createUserList(get(conf.getRestBaseURL() +
-                "users/lookup.json", new HttpParameter[]{
-                new HttpParameter("screen_name", z_T4JInternalStringUtil.join(screenNames))
-                , INCLUDE_ENTITIES}));
-    }
+	@Override
+	public ArrayList<Status_mixi> getStatuses() throws MixiException {
+        return factory.createStatusArrayList(get(conf.getRestBaseURL() + "updates/@me/@self?fields=voice"));
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<User> lookupUsers(long[] ids) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createUserList(get(conf.getRestBaseURL() +
-                "users/lookup.json", new HttpParameter[]{
-                new HttpParameter("user_id", z_T4JInternalStringUtil.join(ids))
-                , INCLUDE_ENTITIES}));
-    }
+	@Override
+	public ArrayList<Status_mixi> getFriendsStatuses() throws MixiException {
+        return factory.createStatusArrayList(get(conf.getRestBaseURL() + "updates/@me/@friends?fields=voice"));
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<User> searchUsers(String query, int page) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createUserList(get(conf.getRestBaseURL() +
-                "users/search.json", new HttpParameter[]{
-                new HttpParameter("q", query),
-                new HttpParameter("per_page", 20),
-                new HttpParameter("page", page)
-                , INCLUDE_ENTITIES}));
-    }
+	@Override
+	public ArrayList<Status_mixi> getArticles() throws MixiException {
+		return null;
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Category> getSuggestedUserCategories() throws MixiException {
-        return factory.createCategoryList(get(conf.getRestBaseURL() +
-                "users/suggestions.json"));
-    }
+	@Override
+	public ArrayList<Status_mixi> getEvents() throws MixiException {
+		return null;
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<User> getUserSuggestions(String categorySlug) throws MixiException {
-        HttpResponse res = get(conf.getRestBaseURL() + "users/suggestions/"
-                + categorySlug + ".json");
-        return factory.createUserListFromJSONArray_Users(res);
-    }
+	@Override
+	public ArrayList<Status_mixi> getReviews() throws MixiException {
+		return null;
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<User> getMemberSuggestions(String categorySlug) throws MixiException {
-        HttpResponse res = get(conf.getRestBaseURL() + "users/suggestions/"
-                + categorySlug + "/members.json");
-        return factory.createUserListFromJSONArray(res);
-    }
+	@Override
+	public ArrayList<Status_mixi> getVideos() throws MixiException {
+		return null;
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    public ProfileImage getProfileImage(String screenName, ProfileImage.ImageSize size) throws MixiException {
-        return factory.createProfileImage(get(conf.getRestBaseURL() + "users/profile_image/"
-                + screenName + ".json?size=" + size.getName()));
-    }
+	@Override
+	public ArrayList<Status_mixi> getServices() throws MixiException {
+		return null;
+	}
+
+	@Override
+	public ArrayList<Status_mixi> getPhotos() throws MixiException {
+		return null;
+	}
+
+	@Override
+	public ArrayList<Status_mixi> getPhotoAlbums() throws MixiException {
+		return null;
+	}
+
+	@Override
+	public ArrayList<Status_mixi> getBookmarks() throws MixiException {
+		return null;
+	}
+
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<User> lookupUsers(String[] screenNames) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createUserList(get(conf.getRestBaseURL() +
+//                "users/lookup.json", new HttpParameter[]{
+//                new HttpParameter("screen_name", z_T4JInternalStringUtil.join(screenNames))
+//                , INCLUDE_ENTITIES}));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<User> lookupUsers(long[] ids) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createUserList(get(conf.getRestBaseURL() +
+//                "users/lookup.json", new HttpParameter[]{
+//                new HttpParameter("user_id", z_T4JInternalStringUtil.join(ids))
+//                , INCLUDE_ENTITIES}));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<User> searchUsers(String query, int page) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createUserList(get(conf.getRestBaseURL() +
+//                "users/search.json", new HttpParameter[]{
+//                new HttpParameter("q", query),
+//                new HttpParameter("per_page", 20),
+//                new HttpParameter("page", page)
+//                , INCLUDE_ENTITIES}));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Category> getSuggestedUserCategories() throws MixiException {
+//        return factory.createCategoryList(get(conf.getRestBaseURL() +
+//                "users/suggestions.json"));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<User> getUserSuggestions(String categorySlug) throws MixiException {
+//        HttpResponse res = get(conf.getRestBaseURL() + "users/suggestions/"
+//                + categorySlug + ".json");
+//        return factory.createUserListFromJSONArray_Users(res);
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<User> getMemberSuggestions(String categorySlug) throws MixiException {
+//        HttpResponse res = get(conf.getRestBaseURL() + "users/suggestions/"
+//                + categorySlug + "/members.json");
+//        return factory.createUserListFromJSONArray(res);
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ProfileImage getProfileImage(String screenName, ProfileImage.ImageSize size) throws MixiException {
+//        return factory.createProfileImage(get(conf.getRestBaseURL() + "users/profile_image/"
+//                + screenName + ".json?size=" + size.getName()));
+//    }
 
     public ArrayList<User_mixi> getFriends() throws MixiException {
         return factory.createUserArrayList(get(conf.getRestBaseURL() + "people/@me/@friends?fields=@all"));
@@ -653,201 +561,201 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
 
     /*List Methods*/
 
-    /**
-     * {@inheritDoc}
-     */
-    public UserList createUserList(String listName, boolean isPublicList, String description) throws MixiException {
-        ensureAuthorizationEnabled();
-        List<HttpParameter> httpParams = new ArrayList<HttpParameter>();
-        httpParams.add(new HttpParameter("name", listName));
-        httpParams.add(new HttpParameter("mode", isPublicList ? "public" : "private"));
-        if (description != null) {
-            httpParams.add(new HttpParameter("description", description));
-        }
-        return factory.createAUserList(post(conf.getRestBaseURL() + "lists/create.json",
-                httpParams.toArray(new HttpParameter[httpParams.size()])));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public UserList createUserList(String listName, boolean isPublicList, String description) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        List<HttpParameter> httpParams = new ArrayList<HttpParameter>();
+//        httpParams.add(new HttpParameter("name", listName));
+//        httpParams.add(new HttpParameter("mode", isPublicList ? "public" : "private"));
+//        if (description != null) {
+//            httpParams.add(new HttpParameter("description", description));
+//        }
+//        return factory.createAUserList(post(conf.getRestBaseURL() + "lists/create.json",
+//                httpParams.toArray(new HttpParameter[httpParams.size()])));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public UserList updateUserList(int listId, String newListName, boolean isPublicList, String newDescription) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        List<HttpParameter> httpParams = new ArrayList<HttpParameter>();
+//        httpParams.add(new HttpParameter("list_id", listId));
+//        if (newListName != null) {
+//            httpParams.add(new HttpParameter("name", newListName));
+//        }
+//        httpParams.add(new HttpParameter("mode", isPublicList ? "public" : "private"));
+//        if (newDescription != null) {
+//            httpParams.add(new HttpParameter("description", newDescription));
+//        }
+//        return factory.createAUserList(post(conf.getRestBaseURL() + "lists/update.json", httpParams.toArray(new HttpParameter[httpParams.size()])));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public PagableResponseList<UserList> getUserLists(String listOwnerScreenName, long cursor) throws MixiException {
+//        return factory.createPagableUserListList(get(conf.getRestBaseURL() + "lists.json?screen_name=" + listOwnerScreenName + "&cursor=" + cursor));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public PagableResponseList<UserList> getUserLists(long listOwnerUserId, long cursor) throws MixiException {
+//        return factory.createPagableUserListList(get(conf.getRestBaseURL() + "lists.json?user_id=" + listOwnerUserId + "&cursor=" + cursor));
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public UserList updateUserList(int listId, String newListName, boolean isPublicList, String newDescription) throws MixiException {
-        ensureAuthorizationEnabled();
-        List<HttpParameter> httpParams = new ArrayList<HttpParameter>();
-        httpParams.add(new HttpParameter("list_id", listId));
-        if (newListName != null) {
-            httpParams.add(new HttpParameter("name", newListName));
-        }
-        httpParams.add(new HttpParameter("mode", isPublicList ? "public" : "private"));
-        if (newDescription != null) {
-            httpParams.add(new HttpParameter("description", newDescription));
-        }
-        return factory.createAUserList(post(conf.getRestBaseURL() + "lists/update.json", httpParams.toArray(new HttpParameter[httpParams.size()])));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public UserList showUserList(String listOwnerScreenName, int id) throws MixiException {
+//        return showUserList(id);
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public PagableResponseList<UserList> getUserLists(String listOwnerScreenName, long cursor) throws MixiException {
-        return factory.createPagableUserListList(get(conf.getRestBaseURL() + "lists.json?screen_name=" + listOwnerScreenName + "&cursor=" + cursor));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public UserList showUserList(int listId) throws MixiException {
+//        return factory.createAUserList(get(conf.getRestBaseURL() + "lists/show.json?list_id="
+//                + listId));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public UserList destroyUserList(int listId) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createAUserList(post(conf.getRestBaseURL() + "lists/destroy.json",
+//                new HttpParameter[]{
+//                        new HttpParameter("list_id", listId)}));
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public PagableResponseList<UserList> getUserLists(long listOwnerUserId, long cursor) throws MixiException {
-        return factory.createPagableUserListList(get(conf.getRestBaseURL() + "lists.json?user_id=" + listOwnerUserId + "&cursor=" + cursor));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getUserListStatuses(String listOwnerScreenName, int id, Paging paging) throws MixiException {
+//        return getUserListStatuses(id, paging);
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getUserListStatuses(long listOwnerId, int id, Paging paging) throws MixiException {
+//        return getUserListStatuses(id, paging);
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public UserList showUserList(String listOwnerScreenName, int id) throws MixiException {
-        return showUserList(id);
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getUserListStatuses(int listId, Paging paging) throws MixiException {
+//        return factory.createStatusList(get(conf.getRestBaseURL() + "lists/statuses.json", mergeParameters(paging.asPostParameterArray(Paging.SMCP, Paging.PER_PAGE)
+//                , new HttpParameter[]{new HttpParameter("list_id", listId),
+//                INCLUDE_ENTITIES,
+//                INCLUDE_RTS})));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public PagableResponseList<UserList> getUserListMemberships(long cursor) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createPagableUserListList(get(conf.getRestBaseURL()
+//                + "lists/memberships.json?cursor=" + cursor));
+//
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public UserList showUserList(int listId) throws MixiException {
-        return factory.createAUserList(get(conf.getRestBaseURL() + "lists/show.json?list_id="
-                + listId));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public PagableResponseList<UserList> getUserListMemberships(String listMemberScreenName, long cursor) throws MixiException {
+//        return getUserListMemberships(listMemberScreenName, cursor, false);
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public PagableResponseList<UserList> getUserListMemberships(long listMemberId, long cursor) throws MixiException {
+//        return getUserListMemberships(listMemberId, cursor, false);
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public UserList destroyUserList(int listId) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createAUserList(post(conf.getRestBaseURL() + "lists/destroy.json",
-                new HttpParameter[]{
-                        new HttpParameter("list_id", listId)}));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getUserListStatuses(String listOwnerScreenName, int id, Paging paging) throws MixiException {
-        return getUserListStatuses(id, paging);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getUserListStatuses(long listOwnerId, int id, Paging paging) throws MixiException {
-        return getUserListStatuses(id, paging);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getUserListStatuses(int listId, Paging paging) throws MixiException {
-        return factory.createStatusList(get(conf.getRestBaseURL() + "lists/statuses.json", mergeParameters(paging.asPostParameterArray(Paging.SMCP, Paging.PER_PAGE)
-                , new HttpParameter[]{new HttpParameter("list_id", listId),
-                INCLUDE_ENTITIES,
-                INCLUDE_RTS})));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public PagableResponseList<UserList> getUserListMemberships(long cursor) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createPagableUserListList(get(conf.getRestBaseURL()
-                + "lists/memberships.json?cursor=" + cursor));
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public PagableResponseList<UserList> getUserListMemberships(String listMemberScreenName, long cursor) throws MixiException {
-        return getUserListMemberships(listMemberScreenName, cursor, false);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public PagableResponseList<UserList> getUserListMemberships(long listMemberId, long cursor) throws MixiException {
-        return getUserListMemberships(listMemberId, cursor, false);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public PagableResponseList<UserList> getUserListMemberships(long listMemberId, long cursor, boolean filterToOwnedLists) throws MixiException {
-        if (filterToOwnedLists) {
-            ensureAuthorizationEnabled();
-        }
-        return factory.createPagableUserListList(get(conf.getRestBaseURL()
-                + "lists/memberships.json?user_id=" + listMemberId + "&cursor=" + cursor + "&filter_to_owned_lists=" + filterToOwnedLists));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public PagableResponseList<UserList> getUserListMemberships(String listMemberScreenName, long cursor, boolean filterToOwnedLists) throws MixiException {
-        if (filterToOwnedLists) {
-            ensureAuthorizationEnabled();
-        }
-        return factory.createPagableUserListList(get(conf.getRestBaseURL()
-                + "lists/memberships.json?screen_name=" + listMemberScreenName + "&cursor=" + cursor + "&filter_to_owned_lists=" + filterToOwnedLists));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public PagableResponseList<UserList> getUserListMemberships(long listMemberId, long cursor, boolean filterToOwnedLists) throws MixiException {
+//        if (filterToOwnedLists) {
+//            ensureAuthorizationEnabled();
+//        }
+//        return factory.createPagableUserListList(get(conf.getRestBaseURL()
+//                + "lists/memberships.json?user_id=" + listMemberId + "&cursor=" + cursor + "&filter_to_owned_lists=" + filterToOwnedLists));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public PagableResponseList<UserList> getUserListMemberships(String listMemberScreenName, long cursor, boolean filterToOwnedLists) throws MixiException {
+//        if (filterToOwnedLists) {
+//            ensureAuthorizationEnabled();
+//        }
+//        return factory.createPagableUserListList(get(conf.getRestBaseURL()
+//                + "lists/memberships.json?screen_name=" + listMemberScreenName + "&cursor=" + cursor + "&filter_to_owned_lists=" + filterToOwnedLists));
+//    }
 
 
-    /**
-     * {@inheritDoc}
-     */
-    public PagableResponseList<UserList> getUserListSubscriptions(String listOwnerScreenName, long cursor) throws MixiException {
-        return factory.createPagableUserListList(get(conf.getRestBaseURL() +
-                "lists/subscriptions.json?screen_name=" + listOwnerScreenName + "&cursor=" + cursor));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<UserList> getAllUserLists(String screenName)
-            throws MixiException {
-        return factory.createUserListList(get(conf.getRestBaseURL()
-                + "lists/all.json?screen_name=" + screenName));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<UserList> getAllUserLists(long userId)
-            throws MixiException {
-        return factory.createUserListList(get(conf.getRestBaseURL()
-                + "lists/all.json?user_id=" + userId));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public PagableResponseList<UserList> getUserListSubscriptions(String listOwnerScreenName, long cursor) throws MixiException {
+//        return factory.createPagableUserListList(get(conf.getRestBaseURL() +
+//                "lists/subscriptions.json?screen_name=" + listOwnerScreenName + "&cursor=" + cursor));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<UserList> getAllUserLists(String screenName)
+//            throws MixiException {
+//        return factory.createUserListList(get(conf.getRestBaseURL()
+//                + "lists/all.json?screen_name=" + screenName));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<UserList> getAllUserLists(long userId)
+//            throws MixiException {
+//        return factory.createUserListList(get(conf.getRestBaseURL()
+//                + "lists/all.json?user_id=" + userId));
+//    }
 
     /*List Members Methods*/
 
-    /**
-     * {@inheritDoc}
-     */
-    public PagableResponseList<User> getUserListMembers(String listOwnerScreenName, int listId
-            , long cursor) throws MixiException {
-        return getUserListMembers(listId, cursor);
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public PagableResponseList<User> getUserListMembers(String listOwnerScreenName, int listId
+//            , long cursor) throws MixiException {
+//        return getUserListMembers(listId, cursor);
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public PagableResponseList<User> getUserListMembers(long listOwnerId, int listId
-            , long cursor) throws MixiException {
-        return getUserListMembers(listId, cursor);
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public PagableResponseList<User> getUserListMembers(long listOwnerId, int listId
+//            , long cursor) throws MixiException {
+//        return getUserListMembers(listId, cursor);
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public PagableResponseList<User> getUserListMembers(int listId
-            , long cursor) throws MixiException {
-        return factory.createPagableUserList(get(conf.getRestBaseURL() +
-                "lists/members.json?list_id=" + listId + "&include_entities="
-                + conf.isIncludeEntitiesEnabled() + "&cursor=" + cursor));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public PagableResponseList<User> getUserListMembers(int listId
+//            , long cursor) throws MixiException {
+//        return factory.createPagableUserList(get(conf.getRestBaseURL() +
+//                "lists/members.json?list_id=" + listId + "&include_entities="
+//                + conf.isIncludeEntitiesEnabled() + "&cursor=" + cursor));
+//    }
 
 //    /**
 //     * {@inheritDoc}
@@ -885,17 +793,17 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
 //                        new HttpParameter("screen_name", z_T4JInternalStringUtil.join(screenNames))}));
 //    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public UserList deleteUserListMember(int listId, long userId) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createAUserList(post(conf.getRestBaseURL() +
-                "lists/members/destroy.json",
-                new HttpParameter[]{
-                        new HttpParameter("list_id", listId),
-                        new HttpParameter("user_id", userId)}));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public UserList deleteUserListMember(int listId, long userId) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createAUserList(post(conf.getRestBaseURL() +
+//                "lists/members/destroy.json",
+//                new HttpParameter[]{
+//                        new HttpParameter("list_id", listId),
+//                        new HttpParameter("user_id", userId)}));
+//    }
 
 //    /**
 //     * {@inheritDoc}
@@ -1219,38 +1127,38 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
 //                })));
 //    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public IDs getNoRetweetIds() throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createIDs(get(conf.getRestBaseURL() + "friendships/no_retweet_ids.json"));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public IDs getNoRetweetIds() throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createIDs(get(conf.getRestBaseURL() + "friendships/no_retweet_ids.json"));
+//    }
 
     /* Social Graph Methods */
 
-    /**
-     * {@inheritDoc}
-     */
-    public IDs getFriendsIDs(long cursor) throws MixiException {
-        return factory.createIDs(get(conf.getRestBaseURL() + "friends/ids.json?cursor=" + cursor));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public IDs getFriendsIDs(long userId, long cursor) throws MixiException {
-        return factory.createIDs(get(conf.getRestBaseURL() + "friends/ids.json?user_id=" + userId +
-                "&cursor=" + cursor));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public IDs getFriendsIDs(String screenName, long cursor) throws MixiException {
-        return factory.createIDs(get(conf.getRestBaseURL() + "friends/ids.json?screen_name=" + screenName
-                + "&cursor=" + cursor));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public IDs getFriendsIDs(long cursor) throws MixiException {
+//        return factory.createIDs(get(conf.getRestBaseURL() + "friends/ids.json?cursor=" + cursor));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public IDs getFriendsIDs(long userId, long cursor) throws MixiException {
+//        return factory.createIDs(get(conf.getRestBaseURL() + "friends/ids.json?user_id=" + userId +
+//                "&cursor=" + cursor));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public IDs getFriendsIDs(String screenName, long cursor) throws MixiException {
+//        return factory.createIDs(get(conf.getRestBaseURL() + "friends/ids.json?screen_name=" + screenName
+//                + "&cursor=" + cursor));
+//    }
 
 //    /**
 //     * {@inheritDoc}
@@ -1393,83 +1301,83 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
 //        }
 //    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public User updateProfileImage(File image) throws MixiException {
-        checkFileValidity(image);
-        ensureAuthorizationEnabled();
-        return factory.createUser(post(conf.getRestBaseURL()
-                + "account/update_profile_image.json"
-                , new HttpParameter[]{new HttpParameter("image", image)
-                , INCLUDE_ENTITIES}));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public User updateProfileImage(File image) throws MixiException {
+//        checkFileValidity(image);
+//        ensureAuthorizationEnabled();
+//        return factory.createUser(post(conf.getRestBaseURL()
+//                + "account/update_profile_image.json"
+//                , new HttpParameter[]{new HttpParameter("image", image)
+//                , INCLUDE_ENTITIES}));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public User updateProfileImage(InputStream image) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createUser(post(conf.getRestBaseURL()
+//                + "account/update_profile_image.json"
+//                , new HttpParameter[]{new HttpParameter("image", "image", image)
+//                , INCLUDE_ENTITIES}));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public User updateProfileBackgroundImage(File image, boolean tile)
+//            throws MixiException {
+//        ensureAuthorizationEnabled();
+//        checkFileValidity(image);
+//        return factory.createUser(post(conf.getRestBaseURL()
+//                + "account/update_profile_background_image.json",
+//                new HttpParameter[]{new HttpParameter("image", image)
+//                        , new HttpParameter("tile", tile)
+//                        , INCLUDE_ENTITIES}));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public User updateProfileBackgroundImage(InputStream image, boolean tile)
+//            throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createUser(post(conf.getRestBaseURL()
+//                + "account/update_profile_background_image.json",
+//                new HttpParameter[]{new HttpParameter("image", "image", image)
+//                        , new HttpParameter("tile", tile)
+//                        , INCLUDE_ENTITIES}));
+//    }
+//
+//    /**
+//     * Check the existence, and the type of the specified file.
+//     *
+//     * @param image image to be uploaded
+//     * @throws MixiException when the specified file is not found (FileNotFoundException will be nested)
+//     *                          , or when the specified file object is not representing a file(IOException will be nested).
+//     */
+//    private void checkFileValidity(File image) throws MixiException {
+//        if (!image.exists()) {
+//            //noinspection ThrowableInstanceNeverThrown
+//            throw new MixiException(new FileNotFoundException(image + " is not found."));
+//        }
+//        if (!image.isFile()) {
+//            //noinspection ThrowableInstanceNeverThrown
+//            throw new MixiException(new IOException(image + " is not a file."));
+//        }
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public User updateProfileImage(InputStream image) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createUser(post(conf.getRestBaseURL()
-                + "account/update_profile_image.json"
-                , new HttpParameter[]{new HttpParameter("image", "image", image)
-                , INCLUDE_ENTITIES}));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public User updateProfileBackgroundImage(File image, boolean tile)
-            throws MixiException {
-        ensureAuthorizationEnabled();
-        checkFileValidity(image);
-        return factory.createUser(post(conf.getRestBaseURL()
-                + "account/update_profile_background_image.json",
-                new HttpParameter[]{new HttpParameter("image", image)
-                        , new HttpParameter("tile", tile)
-                        , INCLUDE_ENTITIES}));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public User updateProfileBackgroundImage(InputStream image, boolean tile)
-            throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createUser(post(conf.getRestBaseURL()
-                + "account/update_profile_background_image.json",
-                new HttpParameter[]{new HttpParameter("image", "image", image)
-                        , new HttpParameter("tile", tile)
-                        , INCLUDE_ENTITIES}));
-    }
-
-    /**
-     * Check the existence, and the type of the specified file.
-     *
-     * @param image image to be uploaded
-     * @throws MixiException when the specified file is not found (FileNotFoundException will be nested)
-     *                          , or when the specified file object is not representing a file(IOException will be nested).
-     */
-    private void checkFileValidity(File image) throws MixiException {
-        if (!image.exists()) {
-            //noinspection ThrowableInstanceNeverThrown
-            throw new MixiException(new FileNotFoundException(image + " is not found."));
-        }
-        if (!image.isFile()) {
-            //noinspection ThrowableInstanceNeverThrown
-            throw new MixiException(new IOException(image + " is not a file."));
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getFavorites() throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL()
-                + "favorites.json?include_entities="
-                + conf.isIncludeEntitiesEnabled()));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getFavorites() throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatusList(get(conf.getRestBaseURL()
+//                + "favorites.json?include_entities="
+//                + conf.isIncludeEntitiesEnabled()));
+//    }
 
 //    /**
 //     * {@inheritDoc}
@@ -1501,150 +1409,150 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
 //                        , INCLUDE_ENTITIES)));
 //    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getFavorites(Paging paging) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL() + "favorites.json",
-                mergeParameters(paging.asPostParameterArray()
-                        , INCLUDE_ENTITIES)));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Status> getFavorites(String id, Paging paging) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatusList(get(conf.getRestBaseURL() + "favorites/" + id + ".json",
-                mergeParameters(paging.asPostParameterArray()
-                        , INCLUDE_ENTITIES)));
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    public Status createFavorite(long id) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatus(post(conf.getRestBaseURL() + "favorites/create/" + id + ".json?include_entities="
-                + conf.isIncludeEntitiesEnabled()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Status destroyFavorite(long id) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createStatus(post(conf.getRestBaseURL() + "favorites/destroy/" + id + ".json?include_entities="
-                + conf.isIncludeEntitiesEnabled()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public User enableNotification(String screenName) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createUser(post(conf.getRestBaseURL() + "notifications/follow.json?include_entities="
-                + conf.isIncludeEntitiesEnabled() + "&screen_name=" + screenName));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public User enableNotification(long userId) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createUser(post(conf.getRestBaseURL() + "notifications/follow.json?include_entities="
-                + conf.isIncludeEntitiesEnabled() + "&user_id=" + userId));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public User disableNotification(String screenName) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createUser(post(conf.getRestBaseURL() + "notifications/leave.json?include_entities="
-                + conf.isIncludeEntitiesEnabled() + "&screen_name=" + screenName));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public User disableNotification(long userId) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createUser(post(conf.getRestBaseURL() + "notifications/leave.json?include_entities="
-                + conf.isIncludeEntitiesEnabled() + "&user_id=" + userId));
-    }
-
-    /* Block Methods */
-
-    /**
-     * {@inheritDoc}
-     */
-    public User createBlock(String screenName) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createUser(post(conf.getRestBaseURL() + "blocks/create.json?include_entities="
-                + conf.isIncludeEntitiesEnabled() + "&screen_name=" + screenName));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public User createBlock(long userId) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createUser(post(conf.getRestBaseURL() + "blocks/create.json?include_entities="
-                + conf.isIncludeEntitiesEnabled() + "&user_id=" + userId));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public User destroyBlock(String screen_name) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createUser(post(conf.getRestBaseURL() + "blocks/destroy.json?include_entities="
-                + conf.isIncludeEntitiesEnabled() + "&screen_name=" + screen_name));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public User destroyBlock(long userId) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createUser(post(conf.getRestBaseURL() + "blocks/destroy.json?include_entities="
-                + conf.isIncludeEntitiesEnabled() + "&user_id=" + userId));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean existsBlock(String screenName) throws MixiException {
-        ensureAuthorizationEnabled();
-        try {
-            return -1 == get(conf.getRestBaseURL() + "blocks/exists.json?screen_name=" + screenName).
-                    asString().indexOf("You are not blocking this user.");
-        } catch (MixiException te) {
-            if (te.getStatusCode() == 404) {
-                return false;
-            }
-            throw te;
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean existsBlock(long userId) throws MixiException {
-        ensureAuthorizationEnabled();
-        try {
-            return -1 == get(conf.getRestBaseURL() + "blocks/exists.json?user_id=" + userId).
-                    asString().indexOf("<error>You are not blocking this user.</error>");
-        } catch (MixiException te) {
-            if (te.getStatusCode() == 404) {
-                return false;
-            }
-            throw te;
-        }
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getFavorites(Paging paging) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatusList(get(conf.getRestBaseURL() + "favorites.json",
+//                mergeParameters(paging.asPostParameterArray()
+//                        , INCLUDE_ENTITIES)));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Status> getFavorites(String id, Paging paging) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatusList(get(conf.getRestBaseURL() + "favorites/" + id + ".json",
+//                mergeParameters(paging.asPostParameterArray()
+//                        , INCLUDE_ENTITIES)));
+//    }
+//
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public Status createFavorite(long id) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatus(post(conf.getRestBaseURL() + "favorites/create/" + id + ".json?include_entities="
+//                + conf.isIncludeEntitiesEnabled()));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public Status destroyFavorite(long id) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createStatus(post(conf.getRestBaseURL() + "favorites/destroy/" + id + ".json?include_entities="
+//                + conf.isIncludeEntitiesEnabled()));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public User enableNotification(String screenName) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createUser(post(conf.getRestBaseURL() + "notifications/follow.json?include_entities="
+//                + conf.isIncludeEntitiesEnabled() + "&screen_name=" + screenName));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public User enableNotification(long userId) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createUser(post(conf.getRestBaseURL() + "notifications/follow.json?include_entities="
+//                + conf.isIncludeEntitiesEnabled() + "&user_id=" + userId));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public User disableNotification(String screenName) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createUser(post(conf.getRestBaseURL() + "notifications/leave.json?include_entities="
+//                + conf.isIncludeEntitiesEnabled() + "&screen_name=" + screenName));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public User disableNotification(long userId) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createUser(post(conf.getRestBaseURL() + "notifications/leave.json?include_entities="
+//                + conf.isIncludeEntitiesEnabled() + "&user_id=" + userId));
+//    }
+//
+//    /* Block Methods */
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public User createBlock(String screenName) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createUser(post(conf.getRestBaseURL() + "blocks/create.json?include_entities="
+//                + conf.isIncludeEntitiesEnabled() + "&screen_name=" + screenName));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public User createBlock(long userId) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createUser(post(conf.getRestBaseURL() + "blocks/create.json?include_entities="
+//                + conf.isIncludeEntitiesEnabled() + "&user_id=" + userId));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public User destroyBlock(String screen_name) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createUser(post(conf.getRestBaseURL() + "blocks/destroy.json?include_entities="
+//                + conf.isIncludeEntitiesEnabled() + "&screen_name=" + screen_name));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public User destroyBlock(long userId) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createUser(post(conf.getRestBaseURL() + "blocks/destroy.json?include_entities="
+//                + conf.isIncludeEntitiesEnabled() + "&user_id=" + userId));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public boolean existsBlock(String screenName) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        try {
+//            return -1 == get(conf.getRestBaseURL() + "blocks/exists.json?screen_name=" + screenName).
+//                    asString().indexOf("You are not blocking this user.");
+//        } catch (MixiException te) {
+//            if (te.getStatusCode() == 404) {
+//                return false;
+//            }
+//            throw te;
+//        }
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public boolean existsBlock(long userId) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        try {
+//            return -1 == get(conf.getRestBaseURL() + "blocks/exists.json?user_id=" + userId).
+//                    asString().indexOf("<error>You are not blocking this user.</error>");
+//        } catch (MixiException te) {
+//            if (te.getStatusCode() == 404) {
+//                return false;
+//            }
+//            throw te;
+//        }
+//    }
 
 //    /**
 //     * {@inheritDoc}
@@ -1857,14 +1765,14 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
 
     /* #newtwitter Methods */
 
-    /**
-     * {@inheritDoc}
-     */
-    public RelatedResults getRelatedResults(long statusId) throws MixiException {
-        ensureAuthorizationEnabled();
-        return factory.createRelatedResults(get(conf.getRestBaseURL() + "related_results/show/"
-                + Long.toString(statusId) + ".json"));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public RelatedResults getRelatedResults(long statusId) throws MixiException {
+//        ensureAuthorizationEnabled();
+//        return factory.createRelatedResults(get(conf.getRestBaseURL() + "related_results/show/"
+//                + Long.toString(statusId) + ".json"));
+//    }
 
     /* Help Methods */
 
@@ -1876,19 +1784,19 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
                 asString().indexOf("ok");
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public TwitterAPIConfiguration getAPIConfiguration() throws MixiException {
-        return factory.createTwitterAPIConfiguration(get(conf.getRestBaseURL() + "help/configuration.json"));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ResponseList<Language> getLanguages() throws MixiException {
-        return factory.createLanguageList(get(conf.getRestBaseURL() + "help/languages.json"));
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public TwitterAPIConfiguration getAPIConfiguration() throws MixiException {
+//        return factory.createTwitterAPIConfiguration(get(conf.getRestBaseURL() + "help/configuration.json"));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public ResponseList<Language> getLanguages() throws MixiException {
+//        return factory.createLanguageList(get(conf.getRestBaseURL() + "help/languages.json"));
+//    }
 
     @Override
     public boolean equals(Object o) {
@@ -1898,8 +1806,8 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
 
         MixiImpl twitter = (MixiImpl) o;
 
-        if (!INCLUDE_ENTITIES.equals(twitter.INCLUDE_ENTITIES)) return false;
-        if (!INCLUDE_RTS.equals(twitter.INCLUDE_RTS)) return false;
+//        if (!INCLUDE_ENTITIES.equals(twitter.INCLUDE_ENTITIES)) return false;
+//        if (!INCLUDE_RTS.equals(twitter.INCLUDE_RTS)) return false;
 
         return true;
     }
@@ -1915,7 +1823,7 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
                 response = http.get(url, auth);
             } finally {
                 long elapsedTime = System.currentTimeMillis() - start;
-                TwitterAPIMonitor.getInstance().methodCalled(url, elapsedTime, isOk(response));
+//                TwitterAPIMonitor.getInstance().methodCalled(url, elapsedTime, isOk(response));
             }
             return response;
         }
@@ -1932,7 +1840,7 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
                 response = http.get(url, parameters, auth);
             } finally {
                 long elapsedTime = System.currentTimeMillis() - start;
-                TwitterAPIMonitor.getInstance().methodCalled(url, elapsedTime, isOk(response));
+//                TwitterAPIMonitor.getInstance().methodCalled(url, elapsedTime, isOk(response));
             }
             return response;
         }
@@ -1949,7 +1857,7 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
                 response = http.post(url, auth);
             } finally {
                 long elapsedTime = System.currentTimeMillis() - start;
-                TwitterAPIMonitor.getInstance().methodCalled(url, elapsedTime, isOk(response));
+//                TwitterAPIMonitor.getInstance().methodCalled(url, elapsedTime, isOk(response));
             }
             return response;
         }
@@ -1966,7 +1874,7 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
                 response = http.post(url, parameters, auth);
             } finally {
                 long elapsedTime = System.currentTimeMillis() - start;
-                TwitterAPIMonitor.getInstance().methodCalled(url, elapsedTime, isOk(response));
+//                TwitterAPIMonitor.getInstance().methodCalled(url, elapsedTime, isOk(response));
             }
             return response;
         }
@@ -1983,7 +1891,7 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
                 response = http.delete(url, auth);
             } finally {
                 long elapsedTime = System.currentTimeMillis() - start;
-                TwitterAPIMonitor.getInstance().methodCalled(url, elapsedTime, isOk(response));
+//                TwitterAPIMonitor.getInstance().methodCalled(url, elapsedTime, isOk(response));
             }
             return response;
         }
@@ -1997,16 +1905,17 @@ class MixiImpl extends MixiBaseImpl implements Mixi {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + INCLUDE_ENTITIES.hashCode();
-        result = 31 * result + INCLUDE_RTS.hashCode();
+//        result = 31 * result + INCLUDE_ENTITIES.hashCode();
+//        result = 31 * result + INCLUDE_RTS.hashCode();
         return result;
     }
 
     @Override
     public String toString() {
         return "TwitterImpl{" +
-                "INCLUDE_ENTITIES=" + INCLUDE_ENTITIES +
-                ", INCLUDE_RTS=" + INCLUDE_RTS +
+//                "INCLUDE_ENTITIES=" + INCLUDE_ENTITIES +
+//                ", INCLUDE_RTS=" + INCLUDE_RTS +
                 '}';
     }
+
 }

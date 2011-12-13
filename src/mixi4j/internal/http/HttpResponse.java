@@ -16,12 +16,6 @@
 
 package mixi4j.internal.http;
 
-import twitter4j.internal.logging.Logger;
-import twitter4j.internal.org.json.JSONArray;
-import twitter4j.internal.org.json.JSONException;
-import twitter4j.internal.org.json.JSONObject;
-import twitter4j.internal.org.json.JSONTokener;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +26,10 @@ import java.util.Map;
 
 import mixi4j.MixiException;
 import mixi4j.conf.ConfigurationContext;
+import mixi4j.internal.org.json.JSONArray;
+import mixi4j.internal.org.json.JSONException;
+import mixi4j.internal.org.json.JSONObject;
+import mixi4j.internal.org.json.JSONTokener;
 
 /**
  * A data class representing HTTP Response
@@ -39,7 +37,6 @@ import mixi4j.conf.ConfigurationContext;
  * @author Yusuke Yamamoto - yusuke at mac.com
  */
 public abstract class HttpResponse {
-    private static final Logger logger = Logger.getLogger(HttpResponseImpl.class);
     protected final HttpClientConfiguration CONF;
 
     HttpResponse() {
@@ -104,7 +101,7 @@ public abstract class HttpResponse {
                     buf.append(line).append("\n");
                 }
                 this.responseAsString = buf.toString();
-                logger.debug(responseAsString);
+//                logger.debug(responseAsString);
                 stream.close();
                 streamConsumed = true;
             } catch (IOException ioe) {
@@ -148,7 +145,7 @@ public abstract class HttpResponse {
                     json = new JSONObject(responseAsString);
                 }
                 if (CONF.isPrettyDebugEnabled()) {
-                    logger.debug(json.toString(1));
+//                    logger.debug(json.toString(1));
                 }
             } catch (JSONException jsone) {
                 if (responseAsString == null) {
@@ -189,14 +186,14 @@ public abstract class HttpResponse {
                     jsonArray = new JSONArray(responseAsString);
                 }
                 if (CONF.isPrettyDebugEnabled()) {
-                    logger.debug(jsonArray.toString(1));
+//                    logger.debug(jsonArray.toString(1));
                 }
             } catch (JSONException jsone) {
-                if (logger.isDebugEnabled()) {
-                    throw new MixiException(jsone.getMessage() + ":" + this.responseAsString, jsone);
-                } else {
+//                if (logger.isDebugEnabled()) {
+//                    throw new MixiException(jsone.getMessage() + ":" + this.responseAsString, jsone);
+//                } else {
                     throw new MixiException(jsone.getMessage(), jsone);
-                }
+//                }
             } finally {
                 if (reader != null) {
                     try {

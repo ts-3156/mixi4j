@@ -36,7 +36,6 @@ import mixi4j.internal.http.HttpClientWrapper;
 import mixi4j.internal.http.HttpParameter;
 import mixi4j.internal.http.HttpRequest;
 import mixi4j.internal.util.z_T4JInternalStringUtil;
-import twitter4j.internal.logging.Logger;
 
 /**
  * @author Yusuke Yamamoto - yusuke at mac.com
@@ -48,7 +47,6 @@ public class OAuthAuthorization implements Authorization, java.io.Serializable, 
 
     private static final String HMAC_SHA1 = "HmacSHA1";
     private static final HttpParameter OAUTH_SIGNATURE_METHOD = new HttpParameter("oauth_signature_method", "HMAC-SHA1");
-    private static final Logger logger = Logger.getLogger(OAuthAuthorization.class);
     private static final long serialVersionUID = -4368426677157998618L;
     private String consumerKey = "";
     private String consumerSecret;
@@ -227,9 +225,9 @@ public class OAuthAuthorization implements Authorization, java.io.Serializable, 
         StringBuffer base = new StringBuffer(method).append("&").append(HttpParameter.encode(constructRequestURL(url))).append("&");
         base.append(HttpParameter.encode(normalizeRequestParameters(signatureBaseParams)));
         String oauthBaseString = base.toString();
-        logger.debug("OAuth base string: ", oauthBaseString);
+//        logger.debug("OAuth base string: ", oauthBaseString);
         String signature = generateSignature(oauthBaseString, otoken);
-        logger.debug("OAuth signature: ", signature);
+//        logger.debug("OAuth signature: ", signature);
 
         oauthHeaderParams.add(new HttpParameter("oauth_signature", signature));
 
@@ -334,10 +332,10 @@ public class OAuthAuthorization implements Authorization, java.io.Serializable, 
             mac.init(spec);
             byteHMAC = mac.doFinal(data.getBytes());
         } catch (InvalidKeyException ike) {
-            logger.error("Failed initialize \"Message Authentication Code\" (MAC)", ike);
+//            logger.error("Failed initialize \"Message Authentication Code\" (MAC)", ike);
             throw new AssertionError(ike);
         } catch (NoSuchAlgorithmException nsae) {
-            logger.error("Failed to get HmacSHA1 \"Message Authentication Code\" (MAC)", nsae);
+//            logger.error("Failed to get HmacSHA1 \"Message Authentication Code\" (MAC)", nsae);
             throw new AssertionError(nsae);
         }
         return BASE64Encoder.encode(byteHMAC);
@@ -505,18 +503,4 @@ public class OAuthAuthorization implements Authorization, java.io.Serializable, 
 		return oauthToken;
 	}
 
-	@Override
-	public ConsumerToken getConsumerToken() {
-		return new ConsumerToken(consumerKey, consumerSecret);
-	}
-
-	@Override
-	public String getRedirectURL() {
-		return conf.getOAuthRedirectURL();
-	}
-
-	@Override
-	public String getAuthorizationCode() {
-		return conf.getOAuthAuthorizationCode();
-	}
 }

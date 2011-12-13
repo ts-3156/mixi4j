@@ -70,18 +70,4 @@ public class XAuthAuthorization implements Authorization, java.io.Serializable {
 		return null;
 	}
 
-	@Override
-	public ConsumerToken getConsumerToken() {
-		return new ConsumerToken(consumerKey, consumerSecret);
-	}
-
-	@Override
-	public String getRedirectURL() {
-		return null;
-	}
-
-	@Override
-	public String getAuthorizationCode() {
-		return null;
-	}
 }
